@@ -1238,7 +1238,6 @@
 
   function comboBuilderRow(comboId){
     const combo = COMBOS[comboId];
-    const savings = comboSavings(comboId, null);
     return `
       <div class="prod-row">
         <img class="prod-thumb" src="${combo.img}" data-action="open-combo" data-combo="${comboId}" alt="${combo.name}">
@@ -1252,7 +1251,6 @@
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             ${combo.discount ? pintxoTag(combo.discount,'critical','primary') : ''}
-            ${savings>0 ? pintxoTag('Save '+fmt(savings),'positive','secondary') : ''}
           </div>
           <div class="prod-desc" data-action="open-combo" data-combo="${comboId}">${combo.subtitle} Build it your way.</div>
           <div class="prod-ordered">${boxIcon()} 500+ ordered</div>
