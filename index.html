@@ -305,6 +305,14 @@
   .pintxo-counter .pintxo-icon-button{background:transparent;width:32px;height:32px;}
 
   /* -- ListItem / ListItemBody (list-item/*.module.scss) -- */
+  /* Each pintxo-list-item already carries its own 8px horizontal padding;
+     this adds a matching 8px on the item-list container itself so a row's
+     content sits at the same 16px inset used everywhere else (cb-body,
+     detail-body, selected-summary). The appended "No Pickles ... Edit"
+     custom row (see customRowHtml) has no padding of its own, so it needs
+     that same 8px from here plus its own extra 8px wrapper to land on the
+     same 16px line — see renderSectionBlock. */
+  .item-list{padding:0 var(--spacing-xs);}
   .pintxo-list-item{display:flex;flex-direction:row;box-sizing:border-box;gap:var(--component-listItem-content-gap-s);min-height:var(--component-listItem-minHeight-l);padding:var(--component-listItem-padding-vertical-l) var(--component-listItem-padding-horizontal-l);border-radius:var(--component-listItem-cornerRadius);}
   .pintxo-list-item__withDivider{border-bottom:1px solid var(--component-listItem-border-color);}
   .pintxo-list-item[data-actionable='true']{cursor:pointer;}
@@ -322,12 +330,27 @@
 
   /* -- Expander (expander/*.module.scss) — combo sections -- */
   .pintxo-expander{display:flex;flex-direction:column;border-top:1px solid var(--component-expander-divider-color-enabled);}
-  .pintxo-expander--section{border-top:none;margin-top:var(--spacing-xl);}
+  .pintxo-expander--section{border-top:none;margin-top:var(--spacing-l);}
+  /* Combo sections live directly in .screen-scroll, so their own 16px
+     header/item-list padding is the only inset they get. The detail/product
+     pages' customisation groups (required choice, remove, add) instead sit
+     inside .detail-body/.cb-body, which already has its own 16px padding —
+     without this, the group's own header padding would double it to 32px
+     and misalign the group title from the item title above it. */
+  .pintxo-expander--inset > .pintxo-expander-header{padding-left:0;padding-right:0;}
+  .pintxo-expander--inset > .item-list{padding-left:0;padding-right:0;}
+  /* Each pintxo-list-item also carries its own 8px horizontal padding
+     (meant to pair with .item-list's 8px elsewhere, landing on 16px total —
+     see the combo section item-list rule). Inside an inset group that 8px
+     is already zeroed above, so the row's own 8px would push its image/text
+     8px further right than the zeroed-out group title above it. Zero it
+     here too so the title and the row content start at the same edge. */
+  .pintxo-expander--inset .pintxo-list-item{padding-left:0;padding-right:0;}
   .pintxo-expander-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:var(--spacing-m) var(--spacing-m);cursor:pointer;user-select:none;}
   .pintxo-expander-header__left{display:flex;flex-direction:column;gap:var(--spacing-xxs);flex:1;min-width:0;}
   .section-head-title-row{display:flex;align-items:center;}
   .section-head-meta-row{display:flex;align-items:center;gap:var(--spacing-xs);flex-wrap:wrap;}
-  .pintxo-expander-header__trailing-accessory{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 auto;transition:transform .2s ease;}
+  .pintxo-expander-header__trailing-accessory{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 auto;transition:transform .32s cubic-bezier(.4,0,.2,1);}
   .pintxo-expander-header__trailing-accessory[data-open='true']{transform:rotate(180deg);}
   .pintxo-expander-content{display:flex;flex-direction:column;gap:var(--component-expander-content-bodyContent-gap-vertical);padding:0 var(--spacing-m) var(--spacing-xs);}
 
@@ -346,9 +369,16 @@
 
   /* -- SelectableCard (selectable-card/SelectableCard.module.scss) — quick-pick cards -- */
   .pintxo-selectable-card{display:flex;cursor:pointer;border-radius:var(--component-selectableCard-cornerRadius);border-style:solid;border-width:var(--component-selectableCard-border-unselected-width);border-color:var(--component-selectableCard-border-unselected-enabled);background:var(--component-selectableCard-background);flex:0 0 auto;width:280px;}
-  .pintxo-selectable-card[data-state='selected']{border-width:var(--component-selectableCard-border-selected-width);border-color:var(--component-selectableCard-border-selected-enabled);background:var(--background-color-positive);}
+  .pintxo-selectable-card[data-state='selected']{border-width:var(--component-selectableCard-border-selected-width);border-color:var(--component-selectableCard-border-selected-enabled);}
   .pintxo-selectable-card__container{width:100%;display:flex;flex-direction:column;gap:var(--spacing-xs);padding:var(--component-selectableCard-padding);}
   .pintxo-selectable-card__container__top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  /* Size picker cards (Whopper solo/medium/large) — same selectable-card
+     component, just narrower and image-led instead of text-led. */
+  .pintxo-selectable-card--size{width:112px;}
+  .pintxo-selectable-card--size .pintxo-selectable-card__container{padding:8px;gap:4px;}
+  .size-card-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:var(--cornerRadius-m);display:block;background:var(--background-color-secondary);}
+  .size-card-label{font-size:var(--text-size-xs);font-weight:var(--text-weight-medium);line-height:1.3;}
+  .size-card-price{font-size:var(--text-size-xs);color:var(--text-color-secondary);}
 
   /* -- ModalSheet (modal/base-modal + modal/modal-sheet) — "Show details" bottom sheet -- */
   .pintxo-modal-scrim{position:absolute;inset:0;background:rgba(22,23,23,.5);display:flex;flex-direction:column;justify-content:flex-end;z-index:60;}
@@ -446,6 +476,13 @@
   .quick-heading{font-size:var(--text-size-m);font-weight:var(--text-weight-bold);margin:14px 0 2px;}
   .quick-sub{font-size:var(--text-size-s);color:var(--text-color-secondary);margin:0 0 10px;}
   .quick-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+  /* Size carousel — bleeds to the true screen edges instead of stopping at
+     detail-body's 16px inset: pulled out with a negative margin, then
+     padded back in by the same amount so the first card still lines up
+     with the heading above it, while later cards can scroll past the
+     visible edge instead of being clipped inside the content margin. */
+  .size-row{display:flex;gap:10px;overflow-x:auto;padding:0 var(--spacing-m) 6px;margin:0 calc(-1 * var(--spacing-m));}
+  .size-row::-webkit-scrollbar{display:none;}
   .quick-card-label{font-size:var(--text-size-s);font-weight:var(--text-weight-bold);}
   .quick-card-desc{font-size:var(--text-size-xs);color:var(--text-color-secondary);margin-top:4px;}
   .quick-card-price{font-size:var(--text-size-s);font-weight:var(--text-weight-book);margin-top:8px;}
@@ -707,6 +744,20 @@
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
 
+  // Sized fries for the Whopper's Medium/Large menu sizes (see PRODUCTS.whopper.sizes).
+  const SIDE_ITEMS_MEDIUM = [
+    { id:'patatas-clasicas-m', name:'Medium Classic Fries', price:0, standalonePrice:3.20, img:UP_IMG.patatasClasicas,
+      desc:'Burger King fries, golden and crispy.', customizable:false },
+    { id:'patatas-supreme-m', name:'Medium Supreme Fries', price:0, standalonePrice:3.90, img:UP_IMG.patatasSupreme,
+      desc:'Burger King Supreme Fries.', customizable:false }
+  ];
+  const SIDE_ITEMS_LARGE = [
+    { id:'patatas-clasicas-l', name:'Large Classic Fries', price:0, standalonePrice:3.80, img:UP_IMG.patatasClasicas,
+      desc:'Burger King fries, golden and crispy.', customizable:false },
+    { id:'patatas-supreme-l', name:'Large Supreme Fries', price:0, standalonePrice:4.50, img:UP_IMG.patatasSupreme,
+      desc:'Burger King Supreme Fries.', customizable:false }
+  ];
+
   const DRINK_ITEMS = [
     { id:'coca-cola', name:'Coca-Cola®', price:0, standalonePrice:2.80, img:ASSET.cocaCola, customizable:false, desc:'Coca-Cola, 330ml can.' },
     { id:'coca-cola-zero', name:'Coca-Cola Zero®', price:0, standalonePrice:2.80, img:ASSET.cocaColaZero, customizable:false, desc:'Coca-Cola Zero, 330ml can.' },
@@ -819,7 +870,21 @@
         {id:'none', label:'No Sauce'}
       ]},
       removeOptions:DEFAULT_REMOVE,
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}]
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}],
+      // Size variants — solo burger vs. upgrading to a full menu. Picking
+      // Medium/Large turns "Burger" into a fixed Whopper (still fully
+      // customisable via its own Sauce/Remove/Add, just one level nested)
+      // plus new required Side and Drink picks, all at one flat price —
+      // same pricing model as every other combo in the app. Solo keeps the
+      // page exactly as it always was.
+      sizes:[
+        { id:'solo', label:'Whopper', price:8.90, img:UP_IMG.whopperStandalone,
+          desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.' },
+        { id:'medium', label:'Whopper Menu - Medium', price:10.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_MEDIUM, drinkItems:DRINK_ITEMS,
+          desc:'Whopper®, with medium fries and a drink of your choice.' },
+        { id:'large', label:'Whopper Menu - Large', price:11.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_LARGE, drinkItems:DRINK_ITEMS,
+          desc:'Whopper®, with large fries and a drink of your choice.' }
+      ]
     },
     'menu-pulled-pork-onion-carne': {
       id:'menu-pulled-pork-onion-carne', name:'Pulled Pork & Onion Meal (Beef Bun)', price:11.95, img:UP_IMG.pulledPorkOnionUp,
@@ -990,7 +1055,12 @@
   }
 
   function productUnitTotal(product, draft){
-    let total = product.price;
+    // Sizes (Whopper solo/medium/large) price as a flat combo total, same
+    // as every other combo in the app — the chosen side/drink are already
+    // included in that flat price, only the burger's own ingredient
+    // add-ons stack on top.
+    const sizeConf = (product.sizes && draft.sizeId) ? product.sizes.find(s=>s.id===draft.sizeId) : null;
+    let total = sizeConf ? sizeConf.price : product.price;
     (draft.add||[]).forEach(addId=>{
       const opt = (product.addOptions||[]).find(o=>o.id===addId);
       if(opt) total += opt.price;
@@ -1039,12 +1109,17 @@
      BEFORE the stack actually pops — otherwise there's nothing left on
      screen to animate. animationend (with a timeout fallback, since some
      environments — e.g. jsdom — never fire it) drives that timing. */
+  // Main pages (combo builder + standalone product) are always opened
+  // top-level from the store view, so they present as a full modal sliding
+  // up. The nested product page only exists inside an open combo, so it
+  // presents as a push sliding in from the right instead.
+  function isModalScreen(type){ return type==='combo' || type==='product'; }
   function push(screen){
     state.stack.push(screen);
     render();
     const el = document.querySelector('.screen.active');
     if(el){
-      const enterClass = screen.type==='combo' ? 'nav-enter-modal' : 'nav-enter-push';
+      const enterClass = isModalScreen(screen.type) ? 'nav-enter-modal' : 'nav-enter-push';
       el.classList.add(enterClass);
       el.addEventListener('animationend', function onEnd(){
         el.classList.remove(enterClass);
@@ -1061,7 +1136,7 @@
       if(afterPop) afterPop(); else render();
     }
     if(el){
-      const exitClass = leaving.type==='combo' ? 'nav-exit-modal' : 'nav-exit-push';
+      const exitClass = isModalScreen(leaving.type) ? 'nav-exit-modal' : 'nav-exit-push';
       el.classList.add(exitClass);
       let done=false;
       const onEnd=()=>{ if(done) return; done=true; el.removeEventListener('animationend', onEnd); finish(); };
@@ -1094,6 +1169,33 @@
     sectionState(sectionId).status = 'expanded';
   }
 
+  // Smoothly grows/shrinks a section's expander when it opens, collapses,
+  // or swaps from the open item-list to its compact summary — instead of
+  // the content just snapping straight to its new height. render() replaces
+  // the whole screen's innerHTML on every state change, so there's no DOM
+  // node that persists across the change for a plain CSS transition to
+  // animate; instead this measures the section's height right before
+  // `mutate` runs (which does the state change + render()), then plays a
+  // height animation from that old height to the freshly-rendered new
+  // height via the Web Animations API, which only needs explicit keyframe
+  // values, not a persisting "before" element.
+  function animateSectionToggle(sectionId, mutate){
+    const selector = '[data-section-anchor="'+sectionId+'"]';
+    const before = document.querySelector(selector);
+    const fromHeight = before ? before.getBoundingClientRect().height : null;
+    mutate();
+    const after = document.querySelector(selector);
+    if(after && fromHeight!=null && typeof after.animate==='function'){
+      const toHeight = after.getBoundingClientRect().height;
+      if(Math.abs(toHeight-fromHeight)>1){
+        after.animate(
+          [{height:fromHeight+'px', overflow:'hidden'}, {height:toHeight+'px', overflow:'hidden'}],
+          {duration:320, easing:'cubic-bezier(.4,0,.2,1)'}
+        );
+      }
+    }
+  }
+
   // delayMs gives the user a moment to actually see the just-answered
   // section collapse into its summary (Complete tag, thumbnail, etc.)
   // before the view auto-scrolls on to the next thing.
@@ -1104,6 +1206,23 @@
         const target = openSec
           ? document.querySelector('[data-section-anchor="'+openSec.id+'"]')
           : document.querySelector('[data-combo-footer]');
+        if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    }, delayMs || 0);
+  }
+
+  // Used right after a required selection collapses (see selectItem).
+  // Rather than jumping straight to the next open section — which scrolls
+  // the just-answered section out of view and gives no confirmation it was
+  // registered — this scrolls just far enough that the just-answered
+  // section's own title/summary is at the top of the viewport. Since it's
+  // now collapsed down to a compact summary, the next required section's
+  // title ends up visible right underneath, without hiding the feedback.
+  function scrollToSectionSummary(sectionId, delayMs){
+    setTimeout(()=>{
+      raf(()=>{
+        const target = document.querySelector('[data-section-anchor="'+sectionId+'"]')
+          || document.querySelector('[data-combo-footer]');
         if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
       });
     }, delayMs || 0);
@@ -1130,8 +1249,10 @@
     // Only auto-scroll when a scrollDelay is explicitly passed in — that's
     // the confirm-item path returning from the nested detail/product page.
     // A direct item-click on the combo screen itself (no scrollDelay) no
-    // longer auto-scrolls to the next section.
-    if(scrollDelay !== undefined) scrollToOpenSectionOrFooter(scrollDelay);
+    // longer auto-scrolls to the next section. When it does scroll, it
+    // settles on the just-answered section's own (now collapsed) summary,
+    // not the next section — see scrollToSectionSummary above.
+    if(scrollDelay !== undefined) scrollToSectionSummary(sectionId, scrollDelay);
   }
 
   /* ---------------- rendering ----------------
@@ -1161,6 +1282,7 @@
     if(screen.type==='combo') return renderComboScreen();
     if(screen.type==='detail') return renderDetailScreen(screen);
     if(screen.type==='product') return renderProductScreen(screen);
+    if(screen.type==='product-item') return renderProductItemScreen(screen);
     if(screen.type==='cart') return renderCartScreen();
     if(screen.type==='checkout') return renderCheckoutScreen(screen);
     if(screen.type==='gallery') return renderGalleryScreen(screen);
@@ -1211,6 +1333,10 @@
   // (24px) inside a 40px tap target — not the 16px glyph used elsewhere.
   function chevronDownIcon(){ return ic('chevronDown', 24, 'var(--icon-color-foreground-primary)'); }
   function chevronRightIcon(){ return ic('chevronForward', 14, 'var(--icon-color-foreground-secondary)'); }
+  // Per Figma, the "Whopper" row inside the Burger group (leading to its
+  // nested customisation) uses a bigger right chevron than the small one
+  // used elsewhere (top sellers, "Show details", checkout rows).
+  function chevronRightIconLarge(){ return ic('chevronForward', 24, 'var(--icon-color-foreground-secondary)'); }
   function closeIcon(){ return ic('cross', 16, 'var(--icon-color-foreground-primary)'); }
   function expandIcon(){ return ic('arrowsExpand', 15, 'var(--icon-color-foreground-primary)'); }
   function boxIcon(){ return '<span style="display:inline-flex;vertical-align:-3px;">'+ic('bag', 14, 'var(--icon-color-foreground-positive)')+'</span>'; }
@@ -1261,6 +1387,10 @@
 
   function comboBuilderRow(comboId){
     const combo = COMBOS[comboId];
+    // Same rule as the combo detail page: a promoted combo shows its
+    // discount tag; a non-promoted combo shows the savings tag instead —
+    // never both, to keep the tile from getting noisy.
+    const savings = combo.discount ? 0 : comboSavings(comboId);
     return `
       <div class="prod-row">
         <img class="prod-thumb" src="${combo.img}" data-action="open-combo" data-combo="${comboId}" alt="${combo.name}">
@@ -1274,6 +1404,7 @@
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             ${combo.discount ? pintxoTag(combo.discount,'critical','primary') : ''}
+            ${savings>0 ? pintxoTag('Save '+fmt(savings),'promotion','secondary') : ''}
           </div>
           <div class="prod-desc" data-action="open-combo" data-combo="${comboId}">${combo.subtitle} Build it your way.</div>
           <div class="prod-ordered">${boxIcon()} 500+ ordered</div>
@@ -1346,10 +1477,15 @@
 
   function productCustomisedCardHtml(entry){
     const product = PRODUCTS[entry.productId];
+    const sizeConf = (product.sizes && entry.sizeId) ? product.sizes.find(s=>s.id===entry.sizeId) : null;
+    const sized = sizeConf && entry.sizeId!=='solo';
+    const sizeLabel = sized ? sizeConf.label : null;
+    const sideLabel = sized ? (sizeConf.sideItems.find(it=>it.id===entry.sideItemId)||{}).name : null;
+    const drinkLabel = sized ? (sizeConf.drinkItems.find(it=>it.id===entry.drinkItemId)||{}).name : null;
     const removeLabels = (entry.remove||[]).map(rid=>(product.removeOptions||[]).find(o=>o.id===rid)).filter(Boolean).map(o=>o.label);
     const addLabels = (entry.add||[]).map(aid=>(product.addOptions||[]).find(o=>o.id===aid)).filter(Boolean).map(o=>o.label);
     const choiceLabel = product.requiredChoice ? (product.requiredChoice.options.find(o=>o.id===entry.requiredChoiceId)||{}).label : null;
-    const custom = (choiceLabel?[choiceLabel]:[]).concat(removeLabels, addLabels);
+    const custom = [sizeLabel, choiceLabel, sideLabel, drinkLabel].filter(Boolean).concat(removeLabels, addLabels);
     const unit = productUnitTotal(product, entry);
     return `
       <div class="customised-card">
@@ -1483,7 +1619,7 @@
     // no matter what the user picks.
     const regularUnit = combo.regularPrice != null ? combo.regularPrice + (unit - combo.basePrice) : null;
 
-    const sectionsHtml = combo.sections.map(sd=>renderSectionBlock(sd)).join('');
+    const sectionsHtml = combo.sections.map((sd,i)=>renderSectionBlock(sd, i===0)).join('');
 
     return `
       <div class="screen active">
@@ -1491,8 +1627,8 @@
           <div class="cb-header">
             ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
             <div class="cb-hero-wrap">
-              <img class="cb-hero" src="${combo.img}" alt="${combo.name}" data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="true">
-              <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="true"`})}</div>
+              <img class="cb-hero" src="${combo.img}" alt="${combo.name}" data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="false">
+              <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="false"`})}</div>
             </div>
           </div>
           <div class="cb-body">
@@ -1524,7 +1660,136 @@
       </div>`;
   }
 
-  function renderSectionBlock(sd){
+  // The "No Pickles ... Edit" block for a selected item's customisations.
+  // Shared by the collapsed summary and the expanded item list, so it
+  // stays visible either way instead of disappearing once the section is
+  // reopened.
+  // `editAction` is a full data-action attribute string (e.g.
+  // `data-action="edit-item" data-section="x" data-item="y"`) so this can
+  // back both a combo section's selected item and the Whopper's own
+  // "Burger" row (which reopens via open-product-item instead).
+  function customRowHtml(item, sState, editAction){
+    const removeLabels = (sState.remove||[]).map(id=>(item.removeOptions||[]).find(o=>o.id===id)).filter(Boolean).map(o=>o.label);
+    const addLabels = (sState.add||[]).map(id=>(item.addOptions||[]).find(o=>o.id===id)).filter(Boolean);
+    const addPrice = addLabels.reduce((sum,o)=>sum+o.price,0);
+    const custom = removeLabels.concat(addLabels.map(o=>o.label));
+    if(!custom.length) return '';
+    return `
+      <div class="summary-custom-row">
+        <div class="summary-custom-top">
+          <div class="summary-custom-text-col">
+            <div class="summary-custom-name">${custom.join(', ')}</div>
+            ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')}€</div>`:''}
+          </div>
+          ${pintxoButton({label:'Edit', variant:'neutral', size:'xs', action:editAction})}
+        </div>
+        <div class="summary-custom-divider"></div>
+      </div>`;
+  }
+
+  // Expander wrapper for an optional, multi-select customisation group
+  // (Remove ingredient / Add extra ingredient, on both the nested detail
+  // page and the standalone product page). Unlike a required single-choice
+  // group, there's no "complete" state to collapse into — the user can
+  // keep toggling items at any time — so this never auto-collapses; it only
+  // opens/closes when the user taps the header themselves, same chevron and
+  // animateSectionToggle as the combo sections. `key` doubles as the
+  // data-section-anchor and the draft flag name (`${key}Open`).
+  function renderOptionalGroup(key, title, listHtml, isOpen, isFirst){
+    return `
+      <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
+        <div class="pintxo-expander-header" data-action="toggle-group" data-group="${key}">
+          <div class="pintxo-expander-header__left">
+            <div class="section-head-title-row"><span class="section-head-title">${title}</span></div>
+            <div class="section-head-meta-row"><span class="section-head-sub">Choose any number of items</span></div>
+          </div>
+          <span class="pintxo-expander-header__trailing-accessory" data-open="${isOpen}">${chevronDownIcon()}</span>
+        </div>
+        ${isOpen ? `<div class="item-list">${listHtml}</div>` : ''}
+      </div>`;
+  }
+
+  // Expander wrapper for a required single-choice customisation group
+  // (Whopper's Sauce, and — when a size is picked — its Side and Drink).
+  // Unlike renderOptionalGroup, this DOES auto-collapse: there's exactly
+  // one "complete" state, so picking an option closes it and shows a
+  // one-line summary instead, same as a combo section's selectItem. Tapping
+  // that summary (or the header) reopens it. `options` is [{id,label,img?}]
+  // — img is omitted for Sauce (plain text) and included for Side/Drink
+  // (thumbnail-led, matching the combo section item rows they stand in for).
+  function renderRequiredPickGroup(key, title, chooseText, options, selectedId, isOpen, isFirst){
+    const hasChoice = !!selectedId;
+    const chosen = hasChoice ? options.find(o=>o.id===selectedId) : null;
+    let bodyHtml = '';
+    if(isOpen){
+      bodyHtml = `<div class="item-list">` + options.map(o=>`
+          <div class="pintxo-list-item" data-actionable="true" data-action="required-group-pick" data-group="${key}" data-opt="${o.id}">
+            ${o.img ? `<div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${o.img}" alt="${o.label}"></div>` : ''}
+            <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
+            <div class="pintxo-list-item__trailing-content">${pintxoRadio(selectedId===o.id, `data-action="required-group-pick" data-group="${key}" data-opt="${o.id}"`)}</div>
+          </div>`).join('') + `</div>`;
+    } else if(chosen){
+      bodyHtml = `
+        <div class="selected-summary" style="padding:0 0 6px;">
+          <div class="summary-row">
+            ${chosen.img ? `<img class="item-thumb" src="${chosen.img}" alt="${chosen.label}">` : ''}
+            <div class="summary-mid" data-action="toggle-group" data-group="${key}">
+              <div class="summary-name">${chosen.label}</div>
+            </div>
+            ${pintxoRadio(true, `data-action="toggle-group" data-group="${key}"`)}
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
+        <div class="pintxo-expander-header" data-action="toggle-group" data-group="${key}">
+          <div class="pintxo-expander-header__left">
+            <div class="section-head-title-row"><span class="section-head-title">${title}</span></div>
+            <div class="section-head-meta-row">${hasChoice ? pintxoTag('Complete','positive','primary') : pintxoTag('Required','contrast','primary')}<span class="section-head-sub">${chooseText}</span></div>
+          </div>
+          <span class="pintxo-expander-header__trailing-accessory" data-open="${isOpen}">${chevronDownIcon()}</span>
+        </div>
+        ${bodyHtml}
+      </div>`;
+  }
+
+  // The Whopper's own customisation (Sauce + Remove/Add ingredients) — used
+  // both inline on the product page (solo size) and inside the nested
+  // product-item page (medium/large, where "Burger" is fixed to Whopper but
+  // still fully customisable one level in). Identical either way; only
+  // where it's mounted differs.
+  function renderProductCustomizationBody(product, draft){
+    let requiredHtml = '';
+    if(product.requiredChoice){
+      requiredHtml = renderRequiredPickGroup('required', product.requiredChoice.title, product.requiredChoice.chooseText,
+        product.requiredChoice.options, draft.requiredChoiceId, draft.requiredOpen, true);
+    }
+    let ingHtml = '';
+    if(product.removeOptions){
+      const removeListHtml = product.removeOptions.map(o=>`
+          <div class="pintxo-list-item" data-actionable="true" data-action="toggle-product-remove" data-opt="${o.id}">
+            <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
+            <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.remove.includes(o.id), `data-action="toggle-product-remove" data-opt="${o.id}"`)}</div>
+          </div>`).join('');
+      ingHtml += renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !product.requiredChoice);
+    }
+    if(product.addOptions){
+      const addListHtml = product.addOptions.map(o=>`
+          <div class="pintxo-list-item" data-actionable="true" data-action="toggle-product-add" data-opt="${o.id}">
+            <div class="pintxo-list-item__body-content">
+              <span class="pintxo-list-item__body__title" style="flex-direction:column;">
+                <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
+                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
+              </span>
+            </div>
+            <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-product-add" data-opt="${o.id}"`)}</div>
+          </div>`).join('');
+      ingHtml += renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, !product.requiredChoice && !product.removeOptions);
+    }
+    return requiredHtml + ingHtml;
+  }
+
+  function renderSectionBlock(sd, isFirst){
     const s = sectionState(sd.id);
     const isOpen = s.status==='expanded';
     // A product remains "Complete" for as long as one is selected, even
@@ -1538,16 +1803,26 @@
 
     let itemsHtml = '';
     if(isOpen){
-      itemsHtml = `<div class="item-list">` + sd.items.map(it=>renderItemRow(sd,it,s)).join('') + `</div>`;
+      // The customisation row rides along under whichever item row is
+      // currently selected, so "No Pickles ... Edit" stays visible while
+      // the user has the full item list open too, not just once collapsed.
+      itemsHtml = `<div class="item-list">` + sd.items.map(it=>{
+        let row = renderItemRow(sd,it,s);
+        if(s.itemId===it.id){
+          const custom = customRowHtml(it, s, `data-action="edit-item" data-section="${sd.id}" data-item="${it.id}"`);
+          // customRowHtml has no horizontal padding of its own (the
+          // collapsed-summary usage gets its 16px from .selected-summary
+          // instead). Here it needs its own extra 8px on top of
+          // .item-list's 8px to land on that same 16px inset.
+          if(custom) row += `<div style="padding:0 var(--spacing-xs);">${custom}</div>`;
+        }
+        return row;
+      }).join('') + `</div>`;
     }
 
     let summaryHtml = '';
     if(!isOpen && hasSelection){
       const item = itemDef(sd.id, s.itemId);
-      const removeLabels = (s.remove||[]).map(id=>(item.removeOptions||[]).find(o=>o.id===id)).filter(Boolean).map(o=>o.label);
-      const addLabels = (s.add||[]).map(id=>(item.addOptions||[]).find(o=>o.id===id)).filter(Boolean);
-      const addPrice = addLabels.reduce((sum,o)=>sum+o.price,0);
-      const custom = removeLabels.concat(addLabels.map(o=>o.label));
       summaryHtml = `
         <div class="selected-summary">
           <div class="summary-row">
@@ -1557,22 +1832,16 @@
             </div>
             ${pintxoRadio(true, `data-action="reopen-section" data-section="${sd.id}"`)}
           </div>
-          ${custom.length ? `
-          <div class="summary-custom-row">
-            <div class="summary-custom-top">
-              <div class="summary-custom-text-col">
-                <div class="summary-custom-name">${custom.join(', ')}</div>
-                ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')}€</div>`:''}
-              </div>
-              ${pintxoButton({label:'Edit', variant:'neutral', size:'xs', action:`data-action="edit-item" data-section="${sd.id}" data-item="${item.id}"`})}
-            </div>
-            <div class="summary-custom-divider"></div>
-          </div>` : ''}
+          ${customRowHtml(item, s, `data-action="edit-item" data-section="${sd.id}" data-item="${item.id}"`)}
         </div>`;
     }
 
+    // The first section sits right under the product info header, so it
+    // gets half the usual between-groups gap (12px vs. the 24px used
+    // between one section and the next) instead of inheriting the same
+    // margin as every other section.
     return `
-      <div class="pintxo-expander pintxo-expander--section" data-section-anchor="${sd.id}">
+      <div class="pintxo-expander pintxo-expander--section" data-section-anchor="${sd.id}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
         <div class="pintxo-expander-header" data-action="toggle-section" data-section="${sd.id}">
           <div class="pintxo-expander-header__left">
             <div class="section-head-title-row"><span class="section-head-title">${sd.title}</span></div>
@@ -1592,7 +1861,7 @@
     // each on its own line, no divider between rows.
     return `
       <div class="pintxo-list-item" data-actionable="true" data-action="item-click" data-section="${sd.id}" data-item="${item.id}">
-        <div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sd.id}" data-item="${item.id}" data-info="false"></div>
+        <div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sd.id}" data-item="${item.id}" data-info="true"></div>
         <div class="pintxo-list-item__body-content">
           <span class="pintxo-list-item__body__title" style="flex-direction:column;">
             <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${item.name}</span>
@@ -1606,9 +1875,12 @@
 
   /* ---- Photo gallery (shared by the main hero photo and item thumbnails) ----
      screen.showInfo controls whether the name/description block renders
-     below the photo — the main hero photo shows it, item thumbnails don't.
-     The photo itself is always vertically centered via the flex wrapper,
-     regardless of whether that info block is present. */
+     below the photo. The main/nested page hero photos (combo, product,
+     detail) never show it — the title and description are already on that
+     same page. Only the gallery opened from a nested item's thumbnail in a
+     combo section's item list shows it, since that list row has no
+     description of its own. The photo itself is always vertically centered
+     via the flex wrapper, regardless of whether that info block is present. */
   function renderGalleryScreen(screen){
     return `
       <div class="screen active screen--gallery">
@@ -1633,7 +1905,10 @@
     const item = itemDef(sectionId, itemId);
     const sState = sectionState(sectionId);
     const alreadySelected = sState.itemId===itemId;
-    const draft = screen.draft || { itemId: itemId, remove: alreadySelected ? [...sState.remove] : [], add: alreadySelected ? [...sState.add] : [], quickId:null };
+    const draft = screen.draft || { itemId: itemId, remove: alreadySelected ? [...sState.remove] : [], add: alreadySelected ? [...sState.add] : [], quickId:null, removeOpen:true, addOpen:true };
+    // Old drafts created before these flags existed still default to open.
+    if(draft.removeOpen===undefined) draft.removeOpen = true;
+    if(draft.addOpen===undefined) draft.addOpen = true;
     screen.draft = draft;
 
     let quickHtml='', ingHtml='';
@@ -1662,17 +1937,12 @@
             }).join('')}
           </div>`;
       }
-      ingHtml = `
-        <div class="ing-heading">Remove ingredient</div>
-        <div class="ing-sub">Choose any number of items</div>
-        ${item.removeOptions.map(o=>`
+      const removeListHtml = item.removeOptions.map(o=>`
           <div class="pintxo-list-item" data-actionable="true" data-action="toggle-remove" data-opt="${o.id}">
             <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.remove.includes(o.id), `data-action="toggle-remove" data-opt="${o.id}"`)}</div>
-          </div>`).join('')}
-        <div class="ing-heading">Add extra ingredient</div>
-        <div class="ing-sub">Choose any number of items</div>
-        ${item.addOptions.map(o=>`
+          </div>`).join('');
+      const addListHtml = item.addOptions.map(o=>`
           <div class="pintxo-list-item" data-actionable="true" data-action="toggle-add" data-opt="${o.id}">
             <div class="pintxo-list-item__body-content">
               <span class="pintxo-list-item__body__title" style="flex-direction:column;">
@@ -1681,11 +1951,14 @@
               </span>
             </div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-add" data-opt="${o.id}"`)}</div>
-          </div>`).join('')}
-      `;
+          </div>`).join('');
+      // "Remove ingredient" is the first customisation group only when
+      // there's no quick-pick row above it — same half-margin-under-the-
+      // header treatment as the combo screen's first section.
+      ingHtml = renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml)
+        + renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, false);
     }
 
-    const total = comboUnitTotal(sectionId, draft) * state.qty;
     const ctaLabel = alreadySelected ? 'Confirm' : (item.customizable ? 'Confirm' : 'Select');
 
     return `
@@ -1694,8 +1967,8 @@
           <div class="detail-header">
             ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
-              <img class="detail-hero" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="true">
-              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="true"`})}</div>
+              <img class="detail-hero" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="false">
+              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="false"`})}</div>
             </div>
           </div>
           <div class="detail-body">
@@ -1707,75 +1980,122 @@
         </div>
         <div class="screen-footer">
           <div class="footer-row">
-            <div style="flex:1;">${pintxoButton({label:ctaLabel+' · '+fmt(total), variant:'primary', size:'m', block:true, action:`data-action="confirm-item" data-section="${sectionId}" data-item="${itemId}"`})}</div>
+            <div style="flex:1;">${pintxoButton({label:ctaLabel, variant:'primary', size:'m', block:true, action:`data-action="confirm-item" data-section="${sectionId}" data-item="${itemId}"`})}</div>
           </div>
         </div>
       </div>`;
+  }
+
+  // A fresh draft for a product screen — factored out since it's needed
+  // both for a brand-new "Add" and for reconstructing one from a saved
+  // cart entry (editingCartId).
+  function freshProductDraft(product, entry){
+    const sizeId = entry ? (entry.sizeId || 'solo') : 'solo';
+    return {
+      remove: entry ? [...entry.remove] : [],
+      add: entry ? [...entry.add] : [],
+      requiredChoiceId: entry ? entry.requiredChoiceId : null,
+      qty: entry ? entry.qty : 1,
+      // Reopening an already-configured product: like a saved combo, any
+      // already-answered required choice starts collapsed. Optional groups
+      // always start open — see renderOptionalGroup.
+      requiredOpen: entry ? !entry.requiredChoiceId : true,
+      removeOpen:true, addOpen:true,
+      sizeId: sizeId,
+      sideItemId: entry ? (entry.sideItemId || null) : null,
+      drinkItemId: entry ? (entry.drinkItemId || null) : null,
+      sideOpen: entry ? !entry.sideItemId : true,
+      drinkOpen: entry ? !entry.drinkItemId : true
+    };
   }
 
   /* ---- Product screen (standalone menu product customisation page) ---- */
   function renderProductScreen(screen){
     const product = PRODUCTS[screen.productId];
     if(!screen.draft){
-      let draft = { remove:[], add:[], requiredChoiceId:null, qty:1 };
-      if(screen.editingCartId){
-        const entry = cartProduct(screen.editingCartId);
-        if(entry){ draft = { remove:[...entry.remove], add:[...entry.add], requiredChoiceId: entry.requiredChoiceId, qty: entry.qty }; }
-      }
-      screen.draft = draft;
+      screen.draft = freshProductDraft(product, screen.editingCartId ? cartProduct(screen.editingCartId) : null);
     }
     const draft = screen.draft;
+    // Old drafts created before these flags existed still default to open/solo.
+    if(draft.removeOpen===undefined) draft.removeOpen = true;
+    if(draft.addOpen===undefined) draft.addOpen = true;
+    if(draft.requiredOpen===undefined) draft.requiredOpen = !draft.requiredChoiceId;
+    if(draft.sizeId===undefined) draft.sizeId = 'solo';
+    if(draft.sideOpen===undefined) draft.sideOpen = !draft.sideItemId;
+    if(draft.drinkOpen===undefined) draft.drinkOpen = !draft.drinkItemId;
 
-    let requiredHtml = '';
-    if(product.requiredChoice){
-      const hasChoice = !!draft.requiredChoiceId;
-      requiredHtml = `
-        <div class="pintxo-expander" data-section-anchor="required" style="border-top:none;">
-          <div class="pintxo-expander-header" style="padding-left:0;padding-right:0;">
-            <div class="pintxo-expander-header__left">
-              <span class="section-head-title">${product.requiredChoice.title}</span>
-              ${hasChoice ? pintxoTag('Complete','positive','primary') : pintxoTag('Required','contrast','primary')}
-              <span class="section-head-sub">${product.requiredChoice.chooseText}</span>
-            </div>
-          </div>
-          <div class="item-list" style="padding-left:0;padding-right:0;">
-            ${product.requiredChoice.options.map(o=>`
-              <div class="pintxo-list-item" data-actionable="true" data-action="required-choice-pick" data-opt="${o.id}">
-                <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
-                <div class="pintxo-list-item__trailing-content">${pintxoRadio(draft.requiredChoiceId===o.id, `data-action="required-choice-pick" data-opt="${o.id}"`)}</div>
-              </div>`).join('')}
-          </div>
+    const hasSizes = !!product.sizes;
+    const sizeConf = hasSizes ? product.sizes.find(s=>s.id===draft.sizeId) : null;
+    const sized = hasSizes && draft.sizeId!=='solo'; // upgraded to a Medium/Large menu
+    // Hero photo and description swap with the chosen size, same as price —
+    // falls back to the product's own if a size doesn't define its own.
+    const displayImg = (sizeConf && sizeConf.img) || product.img;
+    const displayDesc = (sizeConf && sizeConf.desc) || product.desc || '';
+
+    // Whopper's own Sauce/Remove/Add — inline when there's no size upgrade,
+    // moved one level into the nested "Burger" row once there is (see
+    // renderProductItemScreen), so it's identical either way.
+    let sizeHtml = '';
+    let burgerHtml = '';
+    let sideDrinkHtml = '';
+    if(hasSizes){
+      sizeHtml = `
+        <div class="ing-heading">Size</div>
+        <div class="ing-sub">Choose 1 item</div>
+        <div class="size-row">
+          ${product.sizes.map(s=>`
+            <div class="pintxo-selectable-card pintxo-selectable-card--size" data-state="${draft.sizeId===s.id?'selected':'unselected'}" data-action="pick-size" data-size="${s.id}">
+              <div class="pintxo-selectable-card__container">
+                <img class="size-card-img" src="${s.img}" alt="${s.label}">
+                <div class="size-card-label">${s.label}</div>
+                <div class="size-card-price">${fmt(s.price)}</div>
+              </div>
+            </div>`).join('')}
         </div>`;
     }
-
-    let ingHtml = '';
-    if(product.removeOptions || product.addOptions){
-      ingHtml = `
-        ${product.removeOptions ? `
-        <div class="ing-heading">Remove ingredient</div>
-        <div class="ing-sub">Choose any number of items</div>
-        ${product.removeOptions.map(o=>`
-          <div class="pintxo-list-item" data-actionable="true" data-action="toggle-product-remove" data-opt="${o.id}">
-            <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
-            <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.remove.includes(o.id), `data-action="toggle-product-remove" data-opt="${o.id}"`)}</div>
-          </div>`).join('')}` : ''}
-        ${product.addOptions ? `
-        <div class="ing-heading">Add extra ingredient</div>
-        <div class="ing-sub">Choose any number of items</div>
-        ${product.addOptions.map(o=>`
-          <div class="pintxo-list-item" data-actionable="true" data-action="toggle-product-add" data-opt="${o.id}">
-            <div class="pintxo-list-item__body-content">
-              <span class="pintxo-list-item__body__title" style="flex-direction:column;">
-                <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
-                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
-              </span>
+    if(sized){
+      const burgerComplete = !product.requiredChoice || !!draft.requiredChoiceId;
+      // Same "No Pickles, Extra Cheese ... Edit" component the combo
+      // sections use, riding along under the Whopper row once it's been
+      // customised — see customRowHtml.
+      const burgerCustomRow = customRowHtml(product, draft, 'data-action="open-product-item"');
+      burgerHtml = `
+        <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset" data-section-anchor="burger" style="margin-top:var(--spacing-s);">
+          <div class="pintxo-expander-header">
+            <div class="pintxo-expander-header__left">
+              <div class="section-head-title-row"><span class="section-head-title">Burger</span></div>
+              <div class="section-head-meta-row">${burgerComplete ? pintxoTag('Complete','positive','primary') : pintxoTag('Required','contrast','primary')}<span class="section-head-sub">Customize item</span></div>
             </div>
-            <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-product-add" data-opt="${o.id}"`)}</div>
-          </div>`).join('')}` : ''}
-      `;
+            <span class="pintxo-expander-header__trailing-accessory" data-open="true">${chevronDownIcon()}</span>
+          </div>
+          <div class="item-list">
+            <div class="pintxo-list-item" data-actionable="true" data-action="open-product-item">
+              <div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${product.img}" alt="${product.name}"></div>
+              <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${product.name}</span></div>
+              <div class="pintxo-list-item__trailing-content">${chevronRightIconLarge()}</div>
+            </div>
+            ${burgerCustomRow}
+          </div>
+        </div>`;
+      const sideOptions = sizeConf.sideItems.map(it=>({id:it.id, label:it.name, img:it.img}));
+      const drinkOptions = sizeConf.drinkItems.map(it=>({id:it.id, label:it.name, img:it.img}));
+      sideDrinkHtml = renderRequiredPickGroup('side', 'Side', 'Customize item', sideOptions, draft.sideItemId, draft.sideOpen, false)
+        + renderRequiredPickGroup('drink', 'Drink', 'Customize item', drinkOptions, draft.drinkItemId, draft.drinkOpen, false);
+    }
+    const bodyHtml = sized ? (burgerHtml + sideDrinkHtml) : renderProductCustomizationBody(product, draft);
+
+    // "Required selections" footer banner, same idea as the combo builder's
+    // — only relevant once a size upgrade has actually added more required
+    // picks (Burger's own sauce, Side, Drink) beyond what solo needs.
+    let bannerHtml = '';
+    if(sized){
+      const burgerComplete = !product.requiredChoice || !!draft.requiredChoiceId;
+      const remaining = (burgerComplete?0:1) + (draft.sideItemId?0:1) + (draft.drinkItemId?0:1);
+      if(remaining>0){
+        bannerHtml = `<div class="req-info-row pintxo-typography-body2">Required selections: <b>${remaining}</b></div>`;
+      }
     }
 
-    const canAdd = !product.requiredChoice || !!draft.requiredChoiceId;
     const unit = productUnitTotal(product, draft);
     const total = unit * draft.qty;
     const ctaLabel = screen.editingCartId ? 'Confirm' : 'Add';
@@ -1783,25 +2103,59 @@
     return `
       <div class="screen active">
         <div class="screen-scroll">
+          <div class="cb-header">
+            ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
+            <div class="cb-hero-wrap">
+              <img class="cb-hero" src="${displayImg}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-size="${draft.sizeId}" data-info="false">
+              <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-size="${draft.sizeId}" data-info="false"`})}</div>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-title">${product.name}</div>
+            <div class="detail-desc">${displayDesc}</div>
+            <div class="cb-price" style="font-size:var(--text-size-l);margin:6px 0 0;">${fmt(unit)}</div>
+            ${sizeHtml}
+            ${bodyHtml}
+          </div>
+        </div>
+        <div class="screen-footer">
+          ${bannerHtml}
+          <div class="footer-row">
+            ${pintxoCounter(draft.qty, 'data-action="product-qty-decr"', 'data-action="product-qty-incr"')}
+            <div style="flex:1;">${pintxoButton({label:ctaLabel+' · '+fmt(total), variant:'primary', size:'m', block:true, action:'data-action="confirm-product"'})}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ---- Product-item screen (nested Whopper ingredient customisation,
+     reached from the "Burger" row once a Medium/Large size is picked).
+     Edits happen live, directly on the parent product screen's draft
+     object (passed through as-is, not copied) — same fields the solo
+     product page edits inline, just one page deeper — so there's nothing
+     special to reconcile when the user pops back. ---- */
+  function renderProductItemScreen(screen){
+    const product = PRODUCTS[screen.productId];
+    const draft = screen.draft;
+    return `
+      <div class="screen active">
+        <div class="screen-scroll">
           <div class="detail-header">
             ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
-              <img class="detail-hero" src="${product.img}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="true">
-              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="true"`})}</div>
+              <img class="detail-hero" src="${product.img}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="false">
+              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="false"`})}</div>
             </div>
           </div>
           <div class="detail-body">
             <div class="detail-title">${product.name}</div>
             <div class="detail-desc">${product.desc||''}</div>
-            <div class="cb-price" style="font-size:var(--text-size-l);margin:6px 0 0;">${fmt(product.price)}</div>
-            ${requiredHtml}
-            ${ingHtml}
+            ${renderProductCustomizationBody(product, draft)}
           </div>
         </div>
         <div class="screen-footer">
           <div class="footer-row">
-            ${pintxoCounter(draft.qty, 'data-action="product-qty-decr"', 'data-action="product-qty-incr"')}
-            <div style="flex:1;${canAdd?'':'opacity:.55;'}">${pintxoButton({label:ctaLabel+' · '+fmt(total), variant:'primary', size:'m', block:true, action:'data-action="confirm-product"'})}</div>
+            <div style="flex:1;">${pintxoButton({label:'Done', variant:'primary', size:'m', block:true, action:'data-action="pop"'})}</div>
           </div>
         </div>
       </div>`;
@@ -1924,10 +2278,6 @@
           </div>
           ${expanded ? `<div class="order-body">${orderLinesHtml}</div>` : ''}
 
-          <div class="checkout-row">
-            <div class="checkout-row-mid"><div class="checkout-row-label">Club DIA membership account</div></div>
-            ${chevronRightIcon()}
-          </div>
           <div class="checkout-row">
             <div class="checkout-row-mid"><div class="checkout-row-label">Allergies</div></div>
             ${chevronRightIcon()}
@@ -2115,7 +2465,11 @@
           img = combo.img; name = combo.name; desc = combo.subtitle;
         } else if(source==='product'){
           const product = PRODUCTS[el.getAttribute('data-product')];
-          img = product.img; name = product.name; desc = product.desc;
+          const sizeId = el.getAttribute('data-size');
+          const sizeConf = (product.sizes && sizeId) ? product.sizes.find(s=>s.id===sizeId) : null;
+          img = (sizeConf && sizeConf.img) || product.img;
+          name = product.name;
+          desc = (sizeConf && sizeConf.desc) || product.desc;
         } else {
           const item = itemDef(el.getAttribute('data-section'), el.getAttribute('data-item'));
           img = item.img; name = item.name; desc = item.desc;
@@ -2225,15 +2579,16 @@
         // hides its item list; the "Required" tag stays exactly as it was
         // until something is actually chosen.
         const sId = el.getAttribute('data-section');
-        const s = sectionState(sId);
-        s.status = (s.status==='expanded') ? 'collapsed' : 'expanded';
-        render();
+        animateSectionToggle(sId, ()=>{
+          const s = sectionState(sId);
+          s.status = (s.status==='expanded') ? 'collapsed' : 'expanded';
+          render();
+        });
         return;
       }
       case 'reopen-section': {
         const sId = el.getAttribute('data-section');
-        setSectionOpen(sId);
-        render();
+        animateSectionToggle(sId, ()=>{ setSectionOpen(sId); render(); });
         scrollToOpenSectionOrFooter();
         return;
       }
@@ -2245,11 +2600,16 @@
         const item = itemDef(sId, iId);
         // Items with nothing to customise apply instantly, whether the tap
         // landed on the row or the radio itself — there's no detail page
-        // to send the user to. Only customizable items push to it.
+        // to send the user to. Only customizable items push to it. The
+        // instant pick still gets the same collapse + settle-on-summary
+        // scroll as the customizable/confirm-item path (just a shorter
+        // beat, since there's no detail-screen pop animation to wait out
+        // first) so a plain choice like a side or a drink gives the same
+        // feedback as a customised one.
         if(item.customizable){
           push({type:'detail', sectionId:sId, itemId:iId});
         } else {
-          selectItem(sId, iId, [], []);
+          animateSectionToggle(sId, ()=> selectItem(sId, iId, [], [], 500));
         }
         return;
       }
@@ -2263,8 +2623,7 @@
         if(itemDef(sId, iId).customizable){
           push({type:'detail', sectionId:sId, itemId:iId});
         } else {
-          setSectionOpen(sId);
-          render();
+          animateSectionToggle(sId, ()=>{ setSectionOpen(sId); render(); });
           scrollToOpenSectionOrFooter();
         }
         return;
@@ -2277,16 +2636,18 @@
       }
 
       case 'quick-pick': {
+        // Single-selection radio choice — once picked it stays picked;
+        // tapping the same card again is a no-op, not a deselect. The user
+        // changes their mind by picking a different card, not by clearing
+        // this one.
         const qId = el.getAttribute('data-quick');
         const item = itemDef(screen.sectionId, screen.itemId);
         const q = item.quickOptions.find(x=>x.id===qId);
         const draft = screen.draft;
-        if(draft.quickId===qId){
-          draft.quickId=null; draft.remove=[]; draft.add=[];
-        } else {
+        if(draft.quickId!==qId){
           draft.quickId=qId; draft.remove=[...q.remove]; draft.add=[...q.add];
+          render();
         }
-        render();
         return;
       }
       case 'toggle-remove': {
@@ -2322,10 +2683,60 @@
         return;
       }
 
-      case 'required-choice-pick': {
+      case 'required-group-pick': {
+        // Single-choice required group (Sauce / Side / Drink): picking an
+        // option auto-collapses it, same as a combo section's selectItem —
+        // there's exactly one "complete" state to settle into, unlike the
+        // optional remove/add groups below. `key` maps onto whichever
+        // draft field that group owns.
+        const key = el.getAttribute('data-group');
         const optId = el.getAttribute('data-opt');
-        screen.draft.requiredChoiceId = optId;
+        const draft = screen.draft;
+        animateSectionToggle(key, ()=>{
+          if(key==='required') draft.requiredChoiceId = optId;
+          else if(key==='side') draft.sideItemId = optId;
+          else if(key==='drink') draft.drinkItemId = optId;
+          draft[key+'Open'] = false;
+          render();
+        });
+        return;
+      }
+      case 'pick-size': {
+        // Switching size resets Side (its options are size-specific — see
+        // SIDE_ITEMS_MEDIUM/LARGE) but keeps Drink, since both Medium and
+        // Large share the same drink list, and keeps the burger's own
+        // Sauce/Remove/Add untouched — the burger itself doesn't change.
+        const sizeId = el.getAttribute('data-size');
+        const draft = screen.draft;
+        if(draft.sizeId!==sizeId){
+          draft.sizeId = sizeId;
+          draft.sideItemId = null;
+          draft.sideOpen = true;
+        }
         render();
+        return;
+      }
+      case 'open-product-item': {
+        // The "Burger" row inside a Medium/Large Whopper menu — nested
+        // customisation for the fixed burger. Shares the exact same draft
+        // object as the parent product screen (not a copy), so edits made
+        // here are already live when the user pops back — see
+        // renderProductItemScreen.
+        push({type:'product-item', productId: screen.productId, draft: screen.draft});
+        return;
+      }
+      case 'toggle-group': {
+        // Shared open/close toggle for the "Remove ingredient"/"Add extra
+        // ingredient" groups (and for reopening the collapsed required
+        // group). Manual only — nothing here ever auto-collapses on its
+        // own, per renderOptionalGroup.
+        const key = el.getAttribute('data-group');
+        const draft = screen.draft;
+        const flag = key+'Open';
+        animateSectionToggle(key, ()=>{
+          draft[flag] = !draft[flag];
+          render();
+        });
         return;
       }
       case 'toggle-product-remove': {
@@ -2351,12 +2762,24 @@
           showToast('Please choose a '+product.requiredChoice.title.toLowerCase()+' first');
           return;
         }
+        const sized = product.sizes && draft.sizeId!=='solo';
+        if(sized && !draft.sideItemId){
+          showToast('Please choose a side first');
+          return;
+        }
+        if(sized && !draft.drinkItemId){
+          showToast('Please choose a drink first');
+          return;
+        }
         if(screen.editingCartId){
           const entry = cartProduct(screen.editingCartId);
           entry.remove = [...draft.remove];
           entry.add = [...draft.add];
           entry.requiredChoiceId = draft.requiredChoiceId;
           entry.qty = draft.qty;
+          entry.sizeId = draft.sizeId;
+          entry.sideItemId = draft.sideItemId;
+          entry.drinkItemId = draft.drinkItemId;
         } else {
           state.cartProducts.push({
             id: 'prod-'+(productCartIdCounter++),
@@ -2364,7 +2787,10 @@
             qty: draft.qty,
             remove: [...draft.remove],
             add: [...draft.add],
-            requiredChoiceId: draft.requiredChoiceId
+            requiredChoiceId: draft.requiredChoiceId,
+            sizeId: draft.sizeId,
+            sideItemId: draft.sideItemId,
+            drinkItemId: draft.drinkItemId
           });
         }
         pop();
