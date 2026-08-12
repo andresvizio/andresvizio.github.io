@@ -211,6 +211,19 @@
   .app-view{flex:1;position:relative;overflow:hidden;}
   .screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--background-color-primary);}
   .screen.active{display:flex;}
+
+  /* ---------- Photo gallery ----------
+     Full-screen dark viewer for a single product photo. Shared by the main
+     hero photo (name + description shown below it) and the small item
+     thumbnails inside a combo section (photo only, always vertically
+     centered in whatever space is left once the info block is hidden). */
+  .screen--gallery{background:var(--background-color-persistentDark);}
+  .gallery-header{flex:0 0 auto;padding:var(--spacing-m);}
+  .gallery-photo-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .gallery-photo{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--background-color-persistentLight);}
+  .gallery-info{flex:0 0 auto;display:flex;flex-direction:column;gap:var(--spacing-xs);padding:0 var(--spacing-m) var(--spacing-xl);}
+  .gallery-title{font-size:var(--text-size-xl);line-height:var(--text-height-xl);font-weight:var(--text-weight-bold);color:var(--text-color-persistentLight);}
+  .gallery-desc{font-size:var(--text-size-s);line-height:var(--text-height-s);font-weight:var(--text-weight-book);color:var(--text-color-persistentLight);}
   .screen-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .screen-scroll::-webkit-scrollbar{width:0;}
 
@@ -1081,14 +1094,19 @@
     sectionState(sectionId).status = 'expanded';
   }
 
-  function scrollToOpenSectionOrFooter(){
-    raf(()=>{
-      const openSec = state.sections.find(s=>s.status==='expanded');
-      const target = openSec
-        ? document.querySelector('[data-section-anchor="'+openSec.id+'"]')
-        : document.querySelector('[data-combo-footer]');
-      if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
-    });
+  // delayMs gives the user a moment to actually see the just-answered
+  // section collapse into its summary (Complete tag, thumbnail, etc.)
+  // before the view auto-scrolls on to the next thing.
+  function scrollToOpenSectionOrFooter(delayMs){
+    setTimeout(()=>{
+      raf(()=>{
+        const openSec = state.sections.find(s=>s.status==='expanded');
+        const target = openSec
+          ? document.querySelector('[data-section-anchor="'+openSec.id+'"]')
+          : document.querySelector('[data-combo-footer]');
+        if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    }, delayMs || 0);
   }
 
   // A section counts toward "required customisations" progress as soon as
@@ -1097,7 +1115,7 @@
   function allSectionsSelected(){ return state.sections.every(s=>!!s.itemId); }
   function selectedSectionCount(){ return state.sections.filter(s=>!!s.itemId).length; }
 
-  function selectItem(sectionId, itemId, remove, add){
+  function selectItem(sectionId, itemId, remove, add, scrollDelay){
     const s = sectionState(sectionId);
     s.itemId = itemId;
     s.remove = remove || [];
@@ -1109,7 +1127,7 @@
     if(allDone){
       setTimeout(()=>{ state.bannerHiding = true; render(); }, 1400);
     }
-    scrollToOpenSectionOrFooter();
+    scrollToOpenSectionOrFooter(scrollDelay);
   }
 
   /* ---------------- rendering ----------------
@@ -1141,6 +1159,7 @@
     if(screen.type==='product') return renderProductScreen(screen);
     if(screen.type==='cart') return renderCartScreen();
     if(screen.type==='checkout') return renderCheckoutScreen(screen);
+    if(screen.type==='gallery') return renderGalleryScreen(screen);
     return '';
   }
 
@@ -1468,8 +1487,8 @@
           <div class="cb-header">
             ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
             <div class="cb-hero-wrap">
-              <img class="cb-hero" src="${combo.img}" alt="${combo.name}">
-              <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:'data-action="noop"'})}</div>
+              <img class="cb-hero" src="${combo.img}" alt="${combo.name}" data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="true">
+              <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="true"`})}</div>
             </div>
           </div>
           <div class="cb-body">
@@ -1568,7 +1587,7 @@
     // each on its own line, no divider between rows.
     return `
       <div class="pintxo-list-item" data-actionable="true" data-action="item-click" data-section="${sd.id}" data-item="${item.id}">
-        <div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${item.img}" alt="${item.name}"></div>
+        <div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sd.id}" data-item="${item.id}" data-info="false"></div>
         <div class="pintxo-list-item__body-content">
           <span class="pintxo-list-item__body__title" style="flex-direction:column;">
             <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${item.name}</span>
@@ -1577,6 +1596,28 @@
           </span>
         </div>
         <div class="pintxo-list-item__trailing-content">${pintxoRadio(selected, `data-action="item-radio" data-section="${sd.id}" data-item="${item.id}"`)}</div>
+      </div>`;
+  }
+
+  /* ---- Photo gallery (shared by the main hero photo and item thumbnails) ----
+     screen.showInfo controls whether the name/description block renders
+     below the photo — the main hero photo shows it, item thumbnails don't.
+     The photo itself is always vertically centered via the flex wrapper,
+     regardless of whether that info block is present. */
+  function renderGalleryScreen(screen){
+    return `
+      <div class="screen active screen--gallery">
+        <div class="gallery-header">
+          ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"'})}
+        </div>
+        <div class="gallery-photo-wrap">
+          <img class="gallery-photo" src="${screen.img}" alt="${screen.name||''}">
+        </div>
+        ${screen.showInfo ? `
+        <div class="gallery-info">
+          <div class="gallery-title">${screen.name}</div>
+          ${screen.desc ? `<div class="gallery-desc">${screen.desc}</div>` : ''}
+        </div>` : ''}
       </div>`;
   }
 
@@ -1648,8 +1689,8 @@
           <div class="detail-header">
             ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
-              <img class="detail-hero" src="${item.img}" alt="${item.name}">
-              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:'data-action="noop"'})}</div>
+              <img class="detail-hero" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="true">
+              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="true"`})}</div>
             </div>
           </div>
           <div class="detail-body">
@@ -1661,7 +1702,6 @@
         </div>
         <div class="screen-footer">
           <div class="footer-row">
-            ${pintxoCounter(1, 'data-action="noop"', 'data-action="noop"')}
             <div style="flex:1;">${pintxoButton({label:ctaLabel+' · '+fmt(total), variant:'primary', size:'m', block:true, action:`data-action="confirm-item" data-section="${sectionId}" data-item="${itemId}"`})}</div>
           </div>
         </div>
@@ -1741,8 +1781,8 @@
           <div class="detail-header">
             ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
-              <img class="detail-hero" src="${product.img}" alt="${product.name}">
-              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:'data-action="noop"'})}</div>
+              <img class="detail-hero" src="${product.img}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="true">
+              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="true"`})}</div>
             </div>
           </div>
           <div class="detail-body">
@@ -2061,6 +2101,24 @@
 
       case 'pop': pop(); return;
 
+      case 'open-gallery': {
+        const source = el.getAttribute('data-source');
+        const showInfo = el.getAttribute('data-info')==='true';
+        let img, name, desc;
+        if(source==='combo'){
+          const combo = COMBOS[el.getAttribute('data-combo')];
+          img = combo.img; name = combo.name; desc = combo.subtitle;
+        } else if(source==='product'){
+          const product = PRODUCTS[el.getAttribute('data-product')];
+          img = product.img; name = product.name; desc = product.desc;
+        } else {
+          const item = itemDef(el.getAttribute('data-section'), el.getAttribute('data-item'));
+          img = item.img; name = item.name; desc = item.desc;
+        }
+        push({type:'gallery', img, name, desc, showInfo});
+        return;
+      }
+
       case 'go-to-cart': push({type:'cart'}); return;
 
       case 'combo-incr': {
@@ -2180,19 +2238,32 @@
         const sId = el.getAttribute('data-section');
         const iId = el.getAttribute('data-item');
         const item = itemDef(sId, iId);
+        // Items with nothing to customise apply instantly, whether the tap
+        // landed on the row or the radio itself — there's no detail page
+        // to send the user to. Only customizable items push to it.
         if(item.customizable){
           push({type:'detail', sectionId:sId, itemId:iId});
         } else {
-          if(action==='item-radio'){
-            selectItem(sId, iId, [], []);
-          } else {
-            push({type:'detail', sectionId:sId, itemId:iId});
-          }
+          selectItem(sId, iId, [], []);
         }
         return;
       }
 
-      case 'open-item-view':
+      case 'open-item-view': {
+        const sId = el.getAttribute('data-section');
+        const iId = el.getAttribute('data-item');
+        // Non-customizable items have no detail page to show — tapping
+        // their collapsed summary just reopens the section's item list
+        // instead (same as tapping the header).
+        if(itemDef(sId, iId).customizable){
+          push({type:'detail', sectionId:sId, itemId:iId});
+        } else {
+          setSectionOpen(sId);
+          render();
+          scrollToOpenSectionOrFooter();
+        }
+        return;
+      }
       case 'edit-item': {
         const sId = el.getAttribute('data-section');
         const iId = el.getAttribute('data-item');
@@ -2238,8 +2309,11 @@
         // Apply the selection only after the detail screen has finished
         // popping (see pop()'s afterPop param) so selectItem's render() -
         // and its auto-scroll-to-next-section logic - runs against the
-        // combo screen, not the screen that's mid-exit-animation.
-        pop(()=>{ selectItem(sId, iId, draft.remove, draft.add); });
+        // combo screen, not the screen that's mid-exit-animation. The
+        // scroll itself gets an extra beat (scrollDelay) so the user can
+        // actually see the section collapse/complete before the view
+        // jumps on to the next one.
+        pop(()=>{ selectItem(sId, iId, draft.remove, draft.add, 700); });
         return;
       }
 
