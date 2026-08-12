@@ -1303,7 +1303,6 @@
           </div>
           ${product.discount ? `<div>${pintxoTag(product.discount,'critical','primary')}</div>`:''}
           <div class="prod-desc" data-action="open-product" data-product="${product.id}">${product.desc}</div>
-          ${product.customizable && product.requiredChoice ? `<div>${pintxoTag('Required customisation','positive','secondary')}</div>` : ''}
           <div class="prod-ordered">${boxIcon()} 500+ ordered</div>
           ${pintxoIconButton({icon:plusIcon(), size:'s', action:`data-action="open-product" data-product="${product.id}"`, attrs:'style="position:absolute;right:0;bottom:0;"'})}
         </div>
