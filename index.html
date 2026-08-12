@@ -1127,7 +1127,11 @@
     if(allDone){
       setTimeout(()=>{ state.bannerHiding = true; render(); }, 1400);
     }
-    scrollToOpenSectionOrFooter(scrollDelay);
+    // Only auto-scroll when a scrollDelay is explicitly passed in — that's
+    // the confirm-item path returning from the nested detail/product page.
+    // A direct item-click on the combo screen itself (no scrollDelay) no
+    // longer auto-scrolls to the next section.
+    if(scrollDelay !== undefined) scrollToOpenSectionOrFooter(scrollDelay);
   }
 
   /* ---------------- rendering ----------------
@@ -1474,6 +1478,7 @@
     const individualTotal = combo.individualTotalOverride != null
       ? combo.individualTotalOverride
       : comboIndividualTotal(state.activeComboId, state.sections);
+    const savings = individualTotal - unit;
     // The old (pre-discount) price scales with the same customisation
     // deltas as the live price, so the discount percentage stays accurate
     // no matter what the user picks.
@@ -1499,8 +1504,9 @@
               ${regularUnit!=null ? `<span class="cb-price-old">${regularUnit.toFixed(2).replace('.',',')}€</span>`:''}
               ${combo.discount ? pintxoTag(combo.discount,'critical','primary') : ''}
             </div>
-            ${individualTotal>0 ? `
+            ${(individualTotal>0 && savings>0 && !combo.discount) ? `
             <div class="cb-savings-row">
+              ${pintxoTag('Save '+fmt(savings),'promotion','secondary')}
               <span class="cb-savings-note">Items sold separately: ${fmt(individualTotal)}</span>
             </div>`:''}
           </div>
