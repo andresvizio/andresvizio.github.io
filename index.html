@@ -699,82 +699,82 @@
     tags: ['-50% some items', '2 for 1 some items', 'Prime'],
     rating: '91%',
     eta: '-',
-    fee: '1,99 € Free'
+    fee: '8,56 zł Free'
   };
 
   /* ---------------- shared item lists (reused across combos) ----------------
      standalonePrice is what the item costs bought on its own — used only to
      compute the combo's "Save X" savings tag, never shown as its own price. */
   const DEFAULT_REMOVE = [{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}];
-  const DEFAULT_ADD = [{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50}];
+  const DEFAULT_ADD = [{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45}];
 
   const BURGER_ITEMS = [
-    { id:'whopper-grande', name:'Whopper®', price:0, standalonePrice:8.90, img:UP_IMG.whopperStandalone,
+    { id:'whopper-grande', name:'Whopper®', price:0, standalonePrice:38.27, img:UP_IMG.whopperStandalone,
       desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       removeOptions:[{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}],
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45},{id:'extracarne',label:'Extra Beef',price:10.75}],
       quickOptions:[{id:'q1',label:'Your usual',desc:'No Pickles, Extra Cheese',remove:['nopepinillos'],add:['extraqueso']}]
     },
-    { id:'doble-whopper-grande', name:'Double Whopper®', price:3.00, standalonePrice:10.90, img:BK_IMG.dobleWhopperGrande,
+    { id:'doble-whopper-grande', name:'Double Whopper®', price:12.90, standalonePrice:46.87, img:BK_IMG.dobleWhopperGrande,
       desc:'Two 100% beef patties, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       removeOptions:[{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}],
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45}],
       quickOptions:[{id:'q1',label:'Ordered 1000+ times',desc:'Extra Bacon, Extra Cheese',remove:[],add:['extrabacon','extraqueso']}]
     },
-    { id:'big-king-grande', name:'Big King®', price:0, standalonePrice:8.50, img:BK_IMG.bigKingGrande,
+    { id:'big-king-grande', name:'Big King®', price:0, standalonePrice:36.55, img:BK_IMG.bigKingGrande,
       desc:'Two juicy flame-grilled beef patties, lettuce, pickles and onion, topped with Big King sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'cbk-grande', name:'CBK', price:1.00, standalonePrice:8.20, img:UP_IMG.cbk,
+    { id:'cbk-grande', name:'CBK', price:4.30, standalonePrice:35.26, img:UP_IMG.cbk,
       desc:'Chicken, bacon, CBK sauce, cheese and fresh lettuce on a bacon brioche bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'long-chicken-grande', name:'Long Chicken®', price:0, standalonePrice:7.50, img:UP_IMG.longChicken,
+    { id:'long-chicken-grande', name:'Long Chicken®', price:0, standalonePrice:32.25, img:UP_IMG.longChicken,
       desc:'Crispy chicken, lettuce and mayo on a seeded bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'steakhouse-grande', name:'Steakhouse', price:0.55, standalonePrice:8.70, img:UP_IMG.steakhouseUp,
+    { id:'steakhouse-grande', name:'Steakhouse', price:2.37, standalonePrice:37.41, img:UP_IMG.steakhouseUp,
       desc:'Beef patty, crispy onions, bacon, cheddar and BBQ sauce on a brioche bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'krispper-grande', name:'Krispper™', price:0, standalonePrice:7.90, img:UP_IMG.krispper,
+    { id:'krispper-grande', name:'Krispper™', price:0, standalonePrice:33.97, img:UP_IMG.krispper,
       desc:'Crispy chicken with a smoky flavour, Krispper sauce, lettuce and cheese.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'doble-cheeseburger-bbq-grande', name:'Double Cheeseburger BBQ', price:0, standalonePrice:8.60, img:UP_IMG.dobleCheeseburgerBBQUp,
+    { id:'doble-cheeseburger-bbq-grande', name:'Double Cheeseburger BBQ', price:0, standalonePrice:36.98, img:UP_IMG.dobleCheeseburgerBBQUp,
       desc:'Two beef patties, cheese, pickles and BBQ sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'whopper-vegetal-grande', name:'Veggie Whopper®', price:0, standalonePrice:8.90, img:UP_IMG.whopperVegetal, tag:'Vegan',
+    { id:'whopper-vegetal-grande', name:'Veggie Whopper®', price:0, standalonePrice:38.27, img:UP_IMG.whopperVegetal, tag:'Vegan',
       desc:'The classic Whopper, now made with a plant-based patty.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'big-king-chicken-grande', name:'Big King® Chicken', price:0, standalonePrice:8.30, img:UP_IMG.bigKingChicken,
+    { id:'big-king-chicken-grande', name:'Big King® Chicken', price:0, standalonePrice:35.69, img:UP_IMG.bigKingChicken,
       desc:'Juicy chicken, cheese, lettuce, pickle and onion with Big King sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD }
   ];
 
   const SIDE_ITEMS = [
-    { id:'patatas-clasicas', name:'Classic Fries', price:0, standalonePrice:3.20, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas', name:'Classic Fries', price:0, standalonePrice:13.76, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme', name:'Supreme Fries', price:0, standalonePrice:3.90, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme', name:'Supreme Fries', price:0, standalonePrice:16.77, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
 
   // Sized fries for the Whopper's Medium/Large menu sizes (see PRODUCTS.whopper.sizes).
   const SIDE_ITEMS_MEDIUM = [
-    { id:'patatas-clasicas-m', name:'Medium Classic Fries', price:0, standalonePrice:3.20, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas-m', name:'Medium Classic Fries', price:0, standalonePrice:13.76, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme-m', name:'Medium Supreme Fries', price:0, standalonePrice:3.90, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme-m', name:'Medium Supreme Fries', price:0, standalonePrice:16.77, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
   const SIDE_ITEMS_LARGE = [
-    { id:'patatas-clasicas-l', name:'Large Classic Fries', price:0, standalonePrice:3.80, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas-l', name:'Large Classic Fries', price:0, standalonePrice:16.34, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme-l', name:'Large Supreme Fries', price:0, standalonePrice:4.50, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme-l', name:'Large Supreme Fries', price:0, standalonePrice:19.35, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
 
   const DRINK_ITEMS = [
-    { id:'coca-cola', name:'Coca-Cola®', price:0, standalonePrice:2.80, img:ASSET.cocaCola, customizable:false, desc:'Coca-Cola, 330ml can.' },
-    { id:'coca-cola-zero', name:'Coca-Cola Zero®', price:0, standalonePrice:2.80, img:ASSET.cocaColaZero, customizable:false, desc:'Coca-Cola Zero, 330ml can.' },
-    { id:'fanta-naranja', name:'Fanta® Orange', price:0, standalonePrice:2.80, img:ASSET.orangeSoda, customizable:false, desc:'Fanta Orange, 330ml can.' },
-    { id:'agua-mineral', name:'Mineral Water', price:0, standalonePrice:2.20, img:ASSET.water, customizable:false, desc:'Mineral water, 500ml.' }
+    { id:'coca-cola', name:'Coca-Cola®', price:0, standalonePrice:12.04, img:ASSET.cocaCola, customizable:false, desc:'Coca-Cola, 330ml can.' },
+    { id:'coca-cola-zero', name:'Coca-Cola Zero®', price:0, standalonePrice:12.04, img:ASSET.cocaColaZero, customizable:false, desc:'Coca-Cola Zero, 330ml can.' },
+    { id:'fanta-naranja', name:'Fanta® Orange', price:0, standalonePrice:12.04, img:ASSET.orangeSoda, customizable:false, desc:'Fanta Orange, 330ml can.' },
+    { id:'agua-mineral', name:'Mineral Water', price:0, standalonePrice:9.46, img:ASSET.water, customizable:false, desc:'Mineral water, 500ml.' }
   ];
 
   /* ---------------- combos ----------------
@@ -788,8 +788,8 @@
       id:'combo-1',
       name: 'Solo Meal',
       subtitle: '1 Burger + 1 Side + 1 Drink.',
-      regularPrice: 10.95,
-      basePrice: 8.76,
+      regularPrice:47.08,
+      basePrice:37.67,
       discount: '-20%',
       img: BK_IMG.dobleWhopperGrande,
       sections: [
@@ -802,7 +802,7 @@
       id:'combo-2',
       name: 'Meal for 2',
       subtitle: '2 Burgers + 2 Sides + Choice of Extra.',
-      basePrice: 19.95,
+      basePrice:85.78,
       img: UP_IMG.twoWhoppersNuggets,
       sections: [
         { id:'burger1', title:'Burger 1', required:true, chooseText:'Choose 1 item', items: BURGER_ITEMS },
@@ -810,11 +810,11 @@
         { id:'side1', title:'Side 1', required:true, chooseText:'Choose 1 item', items: SIDE_ITEMS },
         { id:'side2', title:'Side 2', required:true, chooseText:'Choose 1 item', items: SIDE_ITEMS },
         { id:'extraside', title:'Extra', required:true, chooseText:'Choose 1 item', items: [
-          { id:'aros-cebolla', name:'Onion Rings', price:0, standalonePrice:3.50, img:UP_IMG.onionRingsBucket,
+          { id:'aros-cebolla', name:'Onion Rings', price:0, standalonePrice:15.05, img:UP_IMG.onionRingsBucket,
             desc:'Crispy battered onion rings.', customizable:false },
-          { id:'alitas-pollo', name:'Chicken Wings (3 pcs)', price:0, standalonePrice:4.50, img:UP_IMG.chickenWings,
+          { id:'alitas-pollo', name:'Chicken Wings (3 pcs)', price:0, standalonePrice:19.35, img:UP_IMG.chickenWings,
             desc:'Crispy chicken wings, 3 pieces.', customizable:false },
-          { id:'king-nuggets', name:'King Nuggets® (6 pcs)', price:0, standalonePrice:4.50, img:UP_IMG.kingNuggets,
+          { id:'king-nuggets', name:'King Nuggets® (6 pcs)', price:0, standalonePrice:19.35, img:UP_IMG.kingNuggets,
             desc:'King chicken nuggets, 6 pieces.', customizable:false }
         ] }
       ]
@@ -823,16 +823,16 @@
       id:'menu-2burger-nuggets',
       name:'2 Burgers of Your Choice + 2 Fries + 5 Nuggets',
       subtitle:'2 Burgers + 2 Fries + 5 Nuggets.',
-      regularPrice: 30,
-      basePrice: 27, // 30 - 10%
+      regularPrice:129,
+      basePrice:116.10, // 30 - 10%
       discount:'-10%',
       // Placeholder while the real per-item math is being finalised —
       // shows a fixed "Items sold separately" figure instead of the
       // computed one. Remove once the underlying item prices are final.
-      individualTotalOverride: 35,
+      individualTotalOverride:150.50,
       // Fries + nuggets are fixed (not a choice), but still count toward
       // what buying everything separately would cost.
-      extraStandaloneValue: 3.20*2 + 4.50,
+      extraStandaloneValue: 13.76*2 + 19.35,
       img: UP_IMG.twoBurgerNuggets,
       sections: [
         { id:'nb-burger1', title:'Burger 1', required:true, chooseText:'Choose 1 item', items: BURGER_ITEMS },
@@ -872,7 +872,7 @@
      stock photo of the same dish stands in — never an icon or illustration. */
   const PRODUCTS = {
     'whopper': {
-      id:'whopper', name:'Whopper®', price:8.90, img: UP_IMG.whopperStandalone,
+      id:'whopper', name:'Whopper®', price:38.27, img: UP_IMG.whopperStandalone,
       desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       requiredChoice:{ title:'Sauce', chooseText:'Choose 1 item', options:[
@@ -882,7 +882,7 @@
         {id:'none', label:'No Sauce'}
       ]},
       removeOptions:DEFAULT_REMOVE,
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45},{id:'extracarne',label:'Extra Beef',price:10.75}],
       // Size variants — solo burger vs. upgrading to a full menu. Picking
       // Medium/Large turns "Burger" into a fixed Whopper (still fully
       // customisable via its own Sauce/Remove/Add, just one level nested)
@@ -890,71 +890,71 @@
       // same pricing model as every other combo in the app. Solo keeps the
       // page exactly as it always was.
       sizes:[
-        { id:'solo', label:'Whopper', price:8.90, img:UP_IMG.whopperStandalone,
+        { id:'solo', label:'Whopper', price:38.27, img:UP_IMG.whopperStandalone,
           desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.' },
-        { id:'medium', label:'Whopper Menu - Medium', price:10.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_MEDIUM, drinkItems:DRINK_ITEMS,
+        { id:'medium', label:'Whopper Menu - Medium', price:43, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_MEDIUM, drinkItems:DRINK_ITEMS,
           desc:'Whopper®, with medium fries and a drink of your choice.' },
-        { id:'large', label:'Whopper Menu - Large', price:11.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_LARGE, drinkItems:DRINK_ITEMS,
+        { id:'large', label:'Whopper Menu - Large', price:47.30, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_LARGE, drinkItems:DRINK_ITEMS,
           desc:'Whopper®, with large fries and a drink of your choice.' }
       ]
     },
     'menu-pulled-pork-onion-carne': {
-      id:'menu-pulled-pork-onion-carne', name:'Pulled Pork & Onion Meal (Beef Bun)', price:11.95, img:UP_IMG.pulledPorkOnionUp,
+      id:'menu-pulled-pork-onion-carne', name:'Pulled Pork & Onion Meal (Beef Bun)', price:51.38, img:UP_IMG.pulledPorkOnionUp,
       desc:'Pulled pork meal with onion rings, on a beef-style bun, with a drink and side of your choice.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-cheese-bacon-xxl': {
-      id:'menu-doble-cheese-bacon-xxl', name:'Double Cheese Bacon XXL® Meal', price:13.40, img:UP_IMG.dobleCheeseBaconXXL,
+      id:'menu-doble-cheese-bacon-xxl', name:'Double Cheese Bacon XXL® Meal', price:57.62, img:UP_IMG.dobleCheeseBaconXXL,
       desc:'Two beef patties, pickles, cheese, ketchup and mustard, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-duo-triple-carne': {
-      id:'menu-duo-triple-carne', name:'Large Duo Bacon Cheddar Triple Beef Meal', price:17.85, img:UP_IMG.duoTripleCarne,
+      id:'menu-duo-triple-carne', name:'Large Duo Bacon Cheddar Triple Beef Meal', price:76.76, img:UP_IMG.duoTripleCarne,
       desc:'Three beef patties, double bacon and cheddar on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-triple-whopper': {
-      id:'menu-triple-whopper', name:'Large Triple Whopper® Meal', price:16.95, img:UP_IMG.tripleWhopperUp,
+      id:'menu-triple-whopper', name:'Large Triple Whopper® Meal', price:72.88, img:UP_IMG.tripleWhopperUp,
       desc:'Three beef patties, lettuce, tomato, onion and pickles, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-spicy-triple': {
-      id:'menu-spicy-triple', name:'Large Spicy Whopper® (Triple Beef) Meal', price:16.95, img:UP_IMG.spicyTripleUp,
+      id:'menu-spicy-triple', name:'Large Spicy Whopper® (Triple Beef) Meal', price:72.88, img:UP_IMG.spicyTripleUp,
       desc:'Three beef patties, lettuce, tomato, onion, pickles and Sriracha sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'combo-pringles-carne': {
-      id:'combo-pringles-carne', name:'Pringles Sour Creamy Beef Combo', price:15.35, img:UP_IMG.pringlesCarneUp,
+      id:'combo-pringles-carne', name:'Pringles Sour Creamy Beef Combo', price:66, img:UP_IMG.pringlesCarneUp,
       desc:'Meal with flame-grilled beef, bacon, cheddar and double Pringles Sour Creamy sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-steakhouse': {
-      id:'menu-doble-steakhouse', name:'Large Double Steakhouse Meal', price:14.50, img:UP_IMG.dobleSteakhouseUp,
+      id:'menu-doble-steakhouse', name:'Large Double Steakhouse Meal', price:62.35, img:UP_IMG.dobleSteakhouseUp,
       desc:'Two beef patties, crispy onions, bacon, cheddar and BBQ sauce on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-big-king-xxl': {
-      id:'menu-big-king-xxl', name:'Big King® XXL Meal', price:13.40, img:UP_IMG.bigKingXXLUp,
+      id:'menu-big-king-xxl', name:'Big King® XXL Meal', price:57.62, img:UP_IMG.bigKingXXLUp,
       desc:'2 beef patties, 4 slices of cheese, lettuce, pickles and Big King sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-cheeseburger-bbq': {
-      id:'menu-doble-cheeseburger-bbq', name:'Large Double Cheeseburger BBQ Meal', price:9.50, img:UP_IMG.dobleCheeseburgerBBQUp,
+      id:'menu-doble-cheeseburger-bbq', name:'Large Double Cheeseburger BBQ Meal', price:40.85, img:UP_IMG.dobleCheeseburgerBBQUp,
       desc:'Two beef patties, cheese, pickles and BBQ sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-duo-doble-carne': {
-      id:'menu-duo-doble-carne', name:'Large Duo Bacon Cheddar Double Beef Meal', price:14.85, img:UP_IMG.duoDobleCarneUp,
+      id:'menu-duo-doble-carne', name:'Large Duo Bacon Cheddar Double Beef Meal', price:63.85, img:UP_IMG.duoDobleCarneUp,
       desc:'Two beef patties, double bacon and cheddar on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-spicy-doble': {
-      id:'menu-spicy-doble', name:'Spicy Whopper® (Double Beef) Meal', price:13.95, img:UP_IMG.spicyDobleUp,
+      id:'menu-spicy-doble', name:'Spicy Whopper® (Double Beef) Meal', price:59.98, img:UP_IMG.spicyDobleUp,
       desc:'Two beef patties, lettuce, tomato, onion, pickles and Sriracha sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-pulled-pork-carne': {
-      id:'menu-pulled-pork-carne', name:'Pulled Pork Meal (Beef Bun)', price:11.45, img:UP_IMG.pulledPorkCarneUp,
+      id:'menu-pulled-pork-carne', name:'Pulled Pork Meal (Beef Bun)', price:49.23, img:UP_IMG.pulledPorkCarneUp,
       desc:'Pulled pork meal, 100% flame-grilled, with your choice of side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     }
@@ -1031,7 +1031,7 @@
   function comboSectionSummary(sections){ return sections.map(s=>itemDef(s.id, s.itemId).name).join(', '); }
 
   function fmt(n){
-    return n.toFixed(2).replace('.', ',') + ' €';
+    return n.toFixed(2).replace('.', ',') + ' zł';
   }
 
   function sectionExtra(sectionId, overrideDraft){
@@ -1420,7 +1420,7 @@
             <div class="prod-name">${combo.name}</div>
             <div style="text-align:right;">
               <div class="prod-price">${fmt(combo.basePrice)}</div>
-              ${combo.regularPrice ? `<span class="prod-price-old">${combo.regularPrice.toFixed(2).replace('.',',')}€</span>`:''}
+              ${combo.regularPrice ? `<span class="prod-price-old">${combo.regularPrice.toFixed(2).replace('.',',')} zł</span>`:''}
             </div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -1450,7 +1450,7 @@
             <div class="prod-name">${product.name}</div>
             <div style="text-align:right;">
               <div class="prod-price">${fmt(product.price)}</div>
-              ${product.oldPrice ? `<span class="prod-price-old">${product.oldPrice.toFixed(2).replace('.',',')}€</span>`:''}
+              ${product.oldPrice ? `<span class="prod-price-old">${product.oldPrice.toFixed(2).replace('.',',')} zł</span>`:''}
             </div>
           </div>
           ${product.discount ? `<div>${pintxoTag(product.discount,'critical','primary')}</div>`:''}
@@ -1657,7 +1657,7 @@
             <div class="cb-subtitle">${combo.subtitle}</div>
             <div class="cb-price-row">
               <span class="cb-price">${fmt(unit)}</span>
-              ${regularUnit!=null ? `<span class="cb-price-old">${regularUnit.toFixed(2).replace('.',',')}€</span>`:''}
+              ${regularUnit!=null ? `<span class="cb-price-old">${regularUnit.toFixed(2).replace('.',',')} zł</span>`:''}
               ${combo.discount ? pintxoTag(combo.discount,'critical','primary') : ''}
             </div>
             ${(individualTotal>0 && savings>0 && !combo.discount) ? `
@@ -1700,7 +1700,7 @@
         <div class="summary-custom-top">
           <div class="summary-custom-text-col">
             <div class="summary-custom-name">${custom.join(', ')}</div>
-            ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')}€</div>`:''}
+            ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')} zł</div>`:''}
           </div>
           ${pintxoButton({label:'Edit', variant:'neutral', size:'xs', action:editAction})}
         </div>
@@ -1806,7 +1806,7 @@
             <div class="pintxo-list-item__body-content">
               <span class="pintxo-list-item__body__title" style="flex-direction:column;">
                 <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
-                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
+                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')} zł</span>
               </span>
             </div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-product-add" data-opt="${o.id}"`)}</div>
@@ -1855,7 +1855,7 @@
           <div class="summary-row">
             <img class="item-thumb" src="${item.img}" data-action="open-item-view" data-section="${sd.id}" data-item="${item.id}">
             <div class="summary-mid" data-action="open-item-view" data-section="${sd.id}" data-item="${item.id}">
-              <div class="summary-name">${item.name}${item.price>0?` <span class="item-extra pintxo-typography-caption" style="color:var(--text-color-secondary);">+${item.price.toFixed(2).replace('.',',')}€</span>`:''}</div>
+              <div class="summary-name">${item.name}${item.price>0?` <span class="item-extra pintxo-typography-caption" style="color:var(--text-color-secondary);">+${item.price.toFixed(2).replace('.',',')} zł</span>`:''}</div>
             </div>
             ${pintxoRadio(true, `data-action="reopen-section" data-section="${sd.id}"`)}
           </div>
@@ -1893,7 +1893,7 @@
           <span class="pintxo-list-item__body__title" style="flex-direction:column;">
             <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${item.name}</span>
             ${item.tag?`<span style="margin-top:2px;">${pintxoTag(item.tag,'neutral','primary')}</span>`:''}
-            ${item.price>0?`<span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${item.price.toFixed(2).replace('.',',')}€</span>`:''}
+            ${item.price>0?`<span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${item.price.toFixed(2).replace('.',',')} zł</span>`:''}
           </span>
         </div>
         <div class="pintxo-list-item__trailing-content">${pintxoRadio(selected, `data-action="item-radio" data-section="${sd.id}" data-item="${item.id}"`)}</div>
@@ -1958,7 +1958,7 @@
                     ${pintxoRadio(selected)}
                   </div>
                   <div class="quick-card-desc">${q.desc}</div>
-                  <div class="quick-card-price">+${price.toFixed(2).replace('.',',')}€</div>
+                  <div class="quick-card-price">+${price.toFixed(2).replace('.',',')} zł</div>
                 </div>
               </div>`;
             }).join('')}
@@ -1974,7 +1974,7 @@
             <div class="pintxo-list-item__body-content">
               <span class="pintxo-list-item__body__title" style="flex-direction:column;">
                 <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
-                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
+                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')} zł</span>
               </span>
             </div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-add" data-opt="${o.id}"`)}</div>
@@ -2274,8 +2274,8 @@
     const subtotal = cartGrandTotal();
     const regularTotal = cartRegularTotal();
     const promoSavings = regularTotal - subtotal;
-    const delivery = 1.99;
-    const services = 0.30;
+    const delivery = 8.56;
+    const services = 1.29;
     const payTotal = subtotal + delivery + services;
 
     const orderLinesHtml = rows.map(r=>{
