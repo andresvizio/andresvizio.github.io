@@ -803,6 +803,7 @@
       name: 'Meal for 2',
       subtitle: '2 Burgers + 2 Sides + Choice of Extra.',
       basePrice:85.78,
+      hideSavingsTag: true,
       img: UP_IMG.twoWhoppersNuggets,
       sections: [
         { id:'burger1', title:'Burger 1', required:true, chooseText:'Choose 1 item', items: BURGER_ITEMS },
@@ -1411,7 +1412,7 @@
     // Same rule as the combo detail page: a promoted combo shows its
     // discount tag; a non-promoted combo shows the savings tag instead —
     // never both, to keep the tile from getting noisy.
-    const savings = combo.discount ? 0 : comboSavings(comboId);
+    const savings = (combo.discount || combo.hideSavingsTag) ? 0 : comboSavings(comboId);
     return `
       <div class="prod-row">
         <img class="prod-thumb" src="${combo.img}" data-action="open-combo" data-combo="${comboId}" alt="${combo.name}">
