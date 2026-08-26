@@ -494,7 +494,11 @@
   /* ---------- Detail / product screen ----------
      Nested detail page: hero keeps side padding + rounded corners
      (Figma: px-16, rounded-l/24px, aspect-[4/3]). */
-  .detail-header{padding:56px var(--spacing-m) 0;}
+  /* 56px clears the status bar (where the fixed back button now floats,
+     see .cb-back) + the button's own 40px height + a 16px gap beneath it,
+     so the rounded hero image starts clear of the button instead of
+     sitting right behind it. */
+  .detail-header{padding:112px var(--spacing-m) 0;}
   .detail-hero-wrap{position:relative;border-radius:var(--cornerRadius-l);overflow:hidden;background:var(--background-color-secondary);}
   .detail-hero{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
   .detail-body{padding:var(--spacing-l) var(--spacing-m) 4px;}
