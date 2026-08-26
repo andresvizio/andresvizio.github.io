@@ -1924,11 +1924,20 @@
     let bodyHtml = '';
     if(isOpen){
       bodyHtml = `<div class="item-list">` + options.map(o=>{
+        // Two independent, generously-sized tap zones (not one shared row
+        // action): the picture + title always open this option's own
+        // nested product page (view-group-item — same page a customizable
+        // item like Burger already uses, just with nothing to customize
+        // for a plain Side/Drink, see renderGroupItemScreen), while the
+        // radio on its own applies the selection directly, no navigation.
+        // Customizable options still get pushed to that same nested page
+        // from the radio too (required-group-pick's own branch), since
+        // there's no "just select instantly" shortcut for those.
         let row = `
-          <div class="pintxo-list-item" data-actionable="true" data-action="required-group-pick" data-group="${key}" data-opt="${o.id}">
-            ${o.img ? `<div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${o.img}" alt="${o.label}" ${galleryAction(o)}></div>` : ''}
-            <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
-            <div class="pintxo-list-item__trailing-content">${pintxoRadio(selectedId===o.id, `data-action="required-group-pick" data-group="${key}" data-opt="${o.id}"`)}</div>
+          <div class="pintxo-list-item" data-actionable="true">
+            ${o.img ? `<div class="pintxo-list-item__leading-content" data-action="view-group-item" data-group="${key}" data-opt="${o.id}"><img class="item-thumb" src="${o.img}" alt="${o.label}" ${galleryAction(o)}></div>` : ''}
+            <div class="pintxo-list-item__body-content" data-action="view-group-item" data-group="${key}" data-opt="${o.id}"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
+            <div class="pintxo-list-item__trailing-content" data-action="required-group-pick" data-group="${key}" data-opt="${o.id}" style="padding-left:8px;">${pintxoRadio(selectedId===o.id)}</div>
           </div>`;
         if(selectedId===o.id){
           const custom = customRow(o);
@@ -2473,8 +2482,13 @@
         </div>`).join('');
     const removeSelected = (item.removeOptions||[]).filter(o=>draft.remove.includes(o.id));
     const addSelected = (item.addOptions||[]).filter(o=>draft.add.includes(o.id));
-    const ingHtml = renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml, removeSelected)
-      + renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, false, addSelected);
+    // A plain Side/Drink option (opened here via view-group-item just to
+    // show its photo, not to customise anything) has neither array — don't
+    // render an empty "Remove ingredient"/"Add extra ingredient" expander
+    // with nothing inside it, just skip straight to the Select footer.
+    let ingHtml = '';
+    if(item.removeOptions && item.removeOptions.length) ingHtml += renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml, removeSelected);
+    if(item.addOptions && item.addOptions.length) ingHtml += renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, !quickHtml && !ingHtml, addSelected);
 
     // Always "Select" here — this page's job is finalising the chosen
     // item's customisation (remove/add), not the item choice itself (that
@@ -3131,6 +3145,37 @@
         // just-answered group's anchor back at the top, with the next
         // required group visible right underneath.
         scrollToSectionSummary(key, 150, true);
+        return;
+      }
+      case 'view-group-item': {
+        // The picture/title zone of a required-pick option's OPEN list row
+        // (see renderRequiredPickGroup) — always opens that option's own
+        // nested product page, whether or not it has anything to customise.
+        // For a customisable option (Burger) this lands on the same page
+        // its radio already pushes to; for a plain one (Side/Drink) it's
+        // the only way to see its own photo/description before choosing —
+        // renderGroupItemScreen simply renders no customisation sections
+        // when the option has none. Selecting there (or just going back
+        // without tapping Select) never applies anything on its own; only
+        // the radio (required-group-pick) or the nested page's own Select
+        // button actually commits a choice.
+        const key = el.getAttribute('data-group');
+        const optId = el.getAttribute('data-opt');
+        const draft = screen.draft;
+        const product = PRODUCTS[screen.productId];
+        const group = product.requiredGroups && product.requiredGroups.find(g=>g.key===key);
+        const opt = group ? group.options.find(o=>o.id===optId) : null;
+        if(!opt) return;
+        const alreadySelected = draft[key+'ItemId']===optId;
+        push({
+          type:'group-item', productId: screen.productId, groupKey:key, itemId:optId,
+          parentDraft: draft,
+          draft: {
+            remove: alreadySelected ? [...(draft[key+'Remove']||[])] : [],
+            add: alreadySelected ? [...(draft[key+'Add']||[])] : [],
+            removeOpen:true, addOpen:true
+          }
+        });
         return;
       }
       case 'pick-size': {
