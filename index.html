@@ -205,7 +205,13 @@
   .proto-controls button:hover{background:var(--background-color-secondary);}
   .phone{width:390px;height:800px;background:#111;border-radius:46px;padding:12px;box-shadow:0 20px 45px rgba(0,0,0,.28);position:relative;flex-shrink:0;}
   .phone-screen{width:100%;height:100%;background:var(--background-color-primary);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative;}
-  .status-bar{flex:0 0 auto;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:var(--text-weight-medium);font-size:15px;color:var(--text-color-primary);background:var(--background-color-primary);z-index:5;}
+  /* Floats on top of the app content instead of reserving its own row, so a
+     full-bleed hero image (every screen in this prototype opens on one) can
+     run all the way up behind it, like a real device's status bar over a
+     photo. Purely decorative (clock + signal/wifi/battery glyphs, nothing
+     tappable), so pointer-events:none keeps it from ever intercepting a tap
+     meant for the close button underneath, even where their areas overlap. */
+  .status-bar{position:absolute;top:0;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-weight:var(--text-weight-medium);font-size:15px;color:var(--text-color-primary);background:transparent;z-index:6;pointer-events:none;}
   .status-icons{display:flex;align-items:center;gap:5px;}
   .status-icons svg{display:block;}
   .app-view{flex:1;position:relative;overflow:hidden;}
@@ -218,7 +224,7 @@
      thumbnails inside a combo section (photo only, always vertically
      centered in whatever space is left once the info block is hidden). */
   .screen--gallery{background:var(--background-color-persistentDark);}
-  .gallery-header{flex:0 0 auto;padding:var(--spacing-m);}
+  .gallery-header{flex:0 0 auto;padding:56px var(--spacing-m) var(--spacing-m);}
   .gallery-photo-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
   .gallery-photo{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--background-color-persistentLight);}
   .gallery-info{flex:0 0 auto;display:flex;flex-direction:column;gap:var(--spacing-xs);padding:0 var(--spacing-m) var(--spacing-xl);}
@@ -330,7 +336,18 @@
 
   /* -- Expander (expander/*.module.scss) — combo sections -- */
   .pintxo-expander{display:flex;flex-direction:column;border-top:1px solid var(--component-expander-divider-color-enabled);}
-  .pintxo-expander--section{border-top:none;margin-top:var(--spacing-l);}
+  .pintxo-expander--section{border-top:none;margin-top:var(--spacing-l);
+    /* Settle-scrolling a section to the top (see scrollToSectionSummary)
+       aligns this element's own top edge with the scrollport's top edge —
+       which, since the hero image bleeds behind the status bar, is the
+       same y=0 the status bar overlay sits at. Worse, the close button
+       (see .cb-back) now floats fixed at top:56px regardless of scroll, so
+       leaving only the status bar's own 40px+16px wouldn't be enough either
+       — the section would land right behind/under the close button instead.
+       scroll-margin-top tells scrollIntoView to leave enough room to clear
+       both: 56px down to the close button's own top edge, its 40px height,
+       plus a 16px gap beneath it before the section title starts. */
+    scroll-margin-top:112px;}
   /* Combo sections live directly in .screen-scroll, so their own 16px
      header/item-list padding is the only inset they get. The detail/product
      pages' customisation groups (required choice, remove, add) instead sit
@@ -346,6 +363,13 @@
      8px further right than the zeroed-out group title above it. Zero it
      here too so the title and the row content start at the same edge. */
   .pintxo-expander--inset .pintxo-list-item{padding-left:0;padding-right:0;}
+  /* A required-pick group's collapsed "chosen" state (.selected-summary,
+     e.g. once a Side is picked) carries the same 16px horizontal padding
+     as a combo section's own top-level summary — correct there, but inside
+     an inset group it stacks on .detail-body's 16px same as above, so the
+     row jumps ~16px further right than the open list state (and the
+     expander's own title) the moment a pick collapses it. Zero it here too. */
+  .pintxo-expander--inset .selected-summary{padding-left:0;padding-right:0;}
   .pintxo-expander-header{display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:var(--spacing-m) var(--spacing-m);cursor:pointer;user-select:none;}
   .pintxo-expander-header__left{display:flex;flex-direction:column;gap:var(--spacing-xxs);flex:1;min-width:0;}
   .section-head-title-row{display:flex;align-items:center;}
@@ -396,7 +420,7 @@
   .store-cover-curve{position:absolute;left:0;right:0;bottom:-1px;height:18px;background:var(--background-color-primary);border-radius:50% 50% 0 0/18px 18px 0 0;}
   .store-avatar{width:64px;height:64px;border-radius:var(--cornerRadius-full);border:3px solid var(--background-color-primary);background:#8B0000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:var(--text-weight-bold);font-size:15px;letter-spacing:.5px;margin:-32px 0 0 16px;position:relative;z-index:2;box-shadow:0 1px 4px rgba(0,0,0,.18);}
   .store-content{padding:10px var(--spacing-m) 4px;}
-  .store-title{font-size:var(--text-size-xl);font-weight:var(--text-weight-bold);margin:0 0 4px;}
+   .store-title{font-size:var(--text-size-xl);font-weight:var(--text-weight-bold);margin:0 0 4px;}
   .store-desc{font-size:var(--text-size-s);color:var(--text-color-secondary);margin:0 0 10px;line-height:1.4;}
   .store-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
   .store-info-row{display:flex;align-items:center;gap:12px;font-size:var(--text-size-s);color:var(--text-color-primary);font-weight:var(--text-weight-medium);margin-bottom:12px;flex-wrap:wrap;}
@@ -436,7 +460,10 @@
      (Figma: aspect-[160/160], no side padding/margin). Nested detail
      page keeps its own padded/rounded 4:3 treatment (.detail-hero-wrap). */
   .cb-header{position:relative;padding:0;}
-  .cb-back{position:absolute;top:16px;left:16px;z-index:3;}
+  /* 40px status-bar height + the usual 16px inset, so the floating close
+     button clears the status bar instead of sitting half-behind it —
+     the hero image underneath still bleeds all the way to the true top. */
+  .cb-back{position:absolute;top:56px;left:16px;z-index:3;}
   .cb-hero-wrap{position:relative;overflow:hidden;background:var(--background-color-secondary);}
   .cb-hero{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;}
   .cb-expand{position:absolute;right:16px;bottom:16px;}
@@ -454,9 +481,9 @@
   .section-head-sub{font-size:var(--text-size-s);color:var(--text-color-secondary);}
 
   .selected-summary{padding:0 var(--spacing-m) 14px;}
-  .summary-row{display:flex;align-items:center;gap:12px;}
+  .summary-row{display:flex;align-items:center;gap:var(--component-listItem-content-gap-s);min-height:var(--component-listItem-minHeight-l);}
   .summary-mid{flex:1;min-width:0;cursor:pointer;}
-  .summary-name{font-size:var(--text-size-m);font-weight:var(--text-weight-medium);}
+  .summary-name{font-size:var(--text-size-m);font-weight:var(--text-weight-book);}
   .summary-custom-row{display:flex;flex-direction:column;gap:var(--spacing-s);padding-top:var(--spacing-xxs);margin-top:0;}
   .summary-custom-top{display:flex;align-items:center;gap:var(--spacing-xxs);}
   .summary-custom-text-col{flex:1;min-width:0;display:flex;flex-direction:column;}
@@ -467,15 +494,20 @@
   /* ---------- Detail / product screen ----------
      Nested detail page: hero keeps side padding + rounded corners
      (Figma: px-16, rounded-l/24px, aspect-[4/3]). */
-  .detail-header{padding:16px var(--spacing-m) 0;}
+  .detail-header{padding:56px var(--spacing-m) 0;}
   .detail-hero-wrap{position:relative;border-radius:var(--cornerRadius-l);overflow:hidden;background:var(--background-color-secondary);}
   .detail-hero{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
-  .detail-body{padding:var(--spacing-m) var(--spacing-m) 4px;}
+  .detail-body{padding:var(--spacing-l) var(--spacing-m) 4px;}
   .detail-title{font-size:var(--text-size-xl);font-weight:var(--text-weight-bold);margin:0 0 6px;}
   .detail-desc{font-size:var(--text-size-s);color:var(--text-color-secondary);line-height:1.5;margin:0 0 6px;}
   .quick-heading{font-size:var(--text-size-m);font-weight:var(--text-weight-bold);margin:14px 0 2px;}
   .quick-sub{font-size:var(--text-size-s);color:var(--text-color-secondary);margin:0 0 10px;}
-  .quick-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;}
+  /* Bleeds past .detail-body's own 16px side padding so the scrollable row
+     runs edge-to-edge — the trailing card peeks off the true screen edge
+     instead of getting hard-clipped at the container's padding boundary.
+     Its own left/right padding re-creates that same 16px inset for the
+     first card, so it still lines up with the title/description above it. */
+  .quick-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin:0 calc(-1 * var(--spacing-m));padding-left:var(--spacing-m);padding-right:var(--spacing-m);}
   /* Size carousel — bleeds to the true screen edges instead of stopping at
      detail-body's 16px inset: pulled out with a negative margin, then
      padded back in by the same amount so the first card still lines up
@@ -699,82 +731,93 @@
     tags: ['-50% some items', '2 for 1 some items', 'Prime'],
     rating: '91%',
     eta: '-',
-    fee: '8,56 zł Free'
+    fee: '1,99 € Free'
   };
 
   /* ---------------- shared item lists (reused across combos) ----------------
      standalonePrice is what the item costs bought on its own — used only to
      compute the combo's "Save X" savings tag, never shown as its own price. */
   const DEFAULT_REMOVE = [{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}];
-  const DEFAULT_ADD = [{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45}];
+  const DEFAULT_ADD = [{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50}];
+  // Same idea as DEFAULT_REMOVE/DEFAULT_ADD, just VICIO-flavoured — shared
+  // across every Combo Satisfyer burger option's nested customisation.
+  const VICIO_DEFAULT_REMOVE = [{id:'nopepinillo',label:'No Pickle'},{id:'noqueso-v',label:'No Cheese'},{id:'nosalsa-v',label:'No Sauce'}];
+  const VICIO_DEFAULT_ADD = [{id:'extracarne-v',label:'Extra Beef Patty',price:2.50},{id:'extrabacon-v',label:'Extra Bacon',price:1.50},{id:'extraqueso-v',label:'Extra Cheese',price:1.00},{id:'extrahuevo-v',label:'Extra Egg',price:1.50}];
+  // Same "Customise it quickly" shortcut cards the original combo items
+  // had (a personal preset + a social-proof one) — shared across every
+  // Combo Satisfyer burger option, same convention as the two defaults above.
+  const VICIO_QUICK_OPTIONS = [
+    { id:'q1', label:'Your usual', desc:'No Sauce, Extra Cheese', remove:['nosalsa-v'], add:['extraqueso-v'] },
+    { id:'q2', label:'Ordered 1000+ times', desc:'Extra Bacon, Extra Beef Patty', remove:[], add:['extrabacon-v','extracarne-v'] }
+  ];
 
   const BURGER_ITEMS = [
-    { id:'whopper-grande', name:'Whopper®', price:0, standalonePrice:38.27, img:UP_IMG.whopperStandalone,
+    { id:'whopper-grande', name:'Whopper®', price:0, standalonePrice:8.90, img:UP_IMG.whopperStandalone,
       desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       removeOptions:[{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}],
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45},{id:'extracarne',label:'Extra Beef',price:10.75}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}],
       quickOptions:[{id:'q1',label:'Your usual',desc:'No Pickles, Extra Cheese',remove:['nopepinillos'],add:['extraqueso']}]
     },
-    { id:'doble-whopper-grande', name:'Double Whopper®', price:12.90, standalonePrice:46.87, img:BK_IMG.dobleWhopperGrande,
+    { id:'doble-whopper-grande', name:'Double Whopper®', price:3.00, standalonePrice:10.90, img:BK_IMG.dobleWhopperGrande,
       desc:'Two 100% beef patties, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       removeOptions:[{id:'nopepinillos',label:'No Pickles'},{id:'nocebolla',label:'No Onion'},{id:'notomate',label:'No Tomato'}],
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50}],
       quickOptions:[{id:'q1',label:'Ordered 1000+ times',desc:'Extra Bacon, Extra Cheese',remove:[],add:['extrabacon','extraqueso']}]
     },
-    { id:'big-king-grande', name:'Big King®', price:0, standalonePrice:36.55, img:BK_IMG.bigKingGrande,
+    { id:'big-king-grande', name:'Big King®', price:0, standalonePrice:8.50, img:BK_IMG.bigKingGrande,
       desc:'Two juicy flame-grilled beef patties, lettuce, pickles and onion, topped with Big King sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'cbk-grande', name:'CBK', price:4.30, standalonePrice:35.26, img:UP_IMG.cbk,
+    { id:'cbk-grande', name:'CBK', price:1.00, standalonePrice:8.20, img:UP_IMG.cbk,
       desc:'Chicken, bacon, CBK sauce, cheese and fresh lettuce on a bacon brioche bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'long-chicken-grande', name:'Long Chicken®', price:0, standalonePrice:32.25, img:UP_IMG.longChicken,
+    { id:'long-chicken-grande', name:'Long Chicken®', price:0, standalonePrice:7.50, img:UP_IMG.longChicken,
       desc:'Crispy chicken, lettuce and mayo on a seeded bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'steakhouse-grande', name:'Steakhouse', price:2.37, standalonePrice:37.41, img:UP_IMG.steakhouseUp,
+    { id:'steakhouse-grande', name:'Steakhouse', price:0.55, standalonePrice:8.70, img:UP_IMG.steakhouseUp,
       desc:'Beef patty, crispy onions, bacon, cheddar and BBQ sauce on a brioche bun.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'krispper-grande', name:'Krispper™', price:0, standalonePrice:33.97, img:UP_IMG.krispper,
+    { id:'krispper-grande', name:'Krispper™', price:0, standalonePrice:7.90, img:UP_IMG.krispper,
       desc:'Crispy chicken with a smoky flavour, Krispper sauce, lettuce and cheese.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'doble-cheeseburger-bbq-grande', name:'Double Cheeseburger BBQ', price:0, standalonePrice:36.98, img:UP_IMG.dobleCheeseburgerBBQUp,
+    { id:'doble-cheeseburger-bbq-grande', name:'Double Cheeseburger BBQ', price:0, standalonePrice:8.60, img:UP_IMG.dobleCheeseburgerBBQUp,
       desc:'Two beef patties, cheese, pickles and BBQ sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'whopper-vegetal-grande', name:'Veggie Whopper®', price:0, standalonePrice:38.27, img:UP_IMG.whopperVegetal, tag:'Vegan',
+    { id:'whopper-vegetal-grande', name:'Veggie Whopper®', price:0, standalonePrice:8.90, img:UP_IMG.whopperVegetal, tag:'Vegan',
       desc:'The classic Whopper, now made with a plant-based patty.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD },
-    { id:'big-king-chicken-grande', name:'Big King® Chicken', price:0, standalonePrice:35.69, img:UP_IMG.bigKingChicken,
+    { id:'big-king-chicken-grande', name:'Big King® Chicken', price:0, standalonePrice:8.30, img:UP_IMG.bigKingChicken,
       desc:'Juicy chicken, cheese, lettuce, pickle and onion with Big King sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD }
   ];
 
   const SIDE_ITEMS = [
-    { id:'patatas-clasicas', name:'Classic Fries', price:0, standalonePrice:13.76, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas', name:'Classic Fries', price:0, standalonePrice:3.20, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme', name:'Supreme Fries', price:0, standalonePrice:16.77, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme', name:'Supreme Fries', price:0, standalonePrice:3.90, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
 
   // Sized fries for the Whopper's Medium/Large menu sizes (see PRODUCTS.whopper.sizes).
   const SIDE_ITEMS_MEDIUM = [
-    { id:'patatas-clasicas-m', name:'Medium Classic Fries', price:0, standalonePrice:13.76, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas-m', name:'Medium Classic Fries', price:0, standalonePrice:3.20, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme-m', name:'Medium Supreme Fries', price:0, standalonePrice:16.77, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme-m', name:'Medium Supreme Fries', price:0, standalonePrice:3.90, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
   const SIDE_ITEMS_LARGE = [
-    { id:'patatas-clasicas-l', name:'Large Classic Fries', price:0, standalonePrice:16.34, img:UP_IMG.patatasClasicas,
+    { id:'patatas-clasicas-l', name:'Large Classic Fries', price:0, standalonePrice:3.80, img:UP_IMG.patatasClasicas,
       desc:'Burger King fries, golden and crispy.', customizable:false },
-    { id:'patatas-supreme-l', name:'Large Supreme Fries', price:0, standalonePrice:19.35, img:UP_IMG.patatasSupreme,
+    { id:'patatas-supreme-l', name:'Large Supreme Fries', price:0, standalonePrice:4.50, img:UP_IMG.patatasSupreme,
       desc:'Burger King Supreme Fries.', customizable:false }
   ];
 
   const DRINK_ITEMS = [
-    { id:'coca-cola', name:'Coca-Cola®', price:0, standalonePrice:12.04, img:ASSET.cocaCola, customizable:false, desc:'Coca-Cola, 330ml can.' },
-    { id:'coca-cola-zero', name:'Coca-Cola Zero®', price:0, standalonePrice:12.04, img:ASSET.cocaColaZero, customizable:false, desc:'Coca-Cola Zero, 330ml can.' },
-    { id:'fanta-naranja', name:'Fanta® Orange', price:0, standalonePrice:12.04, img:ASSET.orangeSoda, customizable:false, desc:'Fanta Orange, 330ml can.' },
-    { id:'agua-mineral', name:'Mineral Water', price:0, standalonePrice:9.46, img:ASSET.water, customizable:false, desc:'Mineral water, 500ml.' }
+    { id:'coca-cola', name:'Coca-Cola®', price:0, standalonePrice:2.80, img:ASSET.cocaCola, customizable:false, desc:'Coca-Cola, 330ml can.' },
+    { id:'coca-cola-zero', name:'Coca-Cola Zero®', price:0, standalonePrice:2.80, img:ASSET.cocaColaZero, customizable:false, desc:'Coca-Cola Zero, 330ml can.' },
+    { id:'fanta-naranja', name:'Fanta® Orange', price:0, standalonePrice:2.80, img:ASSET.orangeSoda, customizable:false, desc:'Fanta Orange, 330ml can.' },
+    { id:'agua-mineral', name:'Mineral Water', price:0, standalonePrice:2.20, img:ASSET.water, customizable:false, desc:'Mineral water, 500ml.' }
   ];
 
   /* ---------------- combos ----------------
@@ -788,8 +831,8 @@
       id:'combo-1',
       name: 'Solo Meal',
       subtitle: '1 Burger + 1 Side + 1 Drink.',
-      regularPrice:47.08,
-      basePrice:37.67,
+      regularPrice: 10.95,
+      basePrice: 8.76,
       discount: '-20%',
       img: BK_IMG.dobleWhopperGrande,
       sections: [
@@ -802,7 +845,7 @@
       id:'combo-2',
       name: 'Meal for 2',
       subtitle: '2 Burgers + 2 Sides + Choice of Extra.',
-      basePrice:85.78,
+      basePrice: 19.95,
       hideSavingsTag: true,
       img: UP_IMG.twoWhoppersNuggets,
       sections: [
@@ -811,11 +854,11 @@
         { id:'side1', title:'Side 1', required:true, chooseText:'Choose 1 item', items: SIDE_ITEMS },
         { id:'side2', title:'Side 2', required:true, chooseText:'Choose 1 item', items: SIDE_ITEMS },
         { id:'extraside', title:'Extra', required:true, chooseText:'Choose 1 item', items: [
-          { id:'aros-cebolla', name:'Onion Rings', price:0, standalonePrice:15.05, img:UP_IMG.onionRingsBucket,
+          { id:'aros-cebolla', name:'Onion Rings', price:0, standalonePrice:3.50, img:UP_IMG.onionRingsBucket,
             desc:'Crispy battered onion rings.', customizable:false },
-          { id:'alitas-pollo', name:'Chicken Wings (3 pcs)', price:0, standalonePrice:19.35, img:UP_IMG.chickenWings,
+          { id:'alitas-pollo', name:'Chicken Wings (3 pcs)', price:0, standalonePrice:4.50, img:UP_IMG.chickenWings,
             desc:'Crispy chicken wings, 3 pieces.', customizable:false },
-          { id:'king-nuggets', name:'King Nuggets® (6 pcs)', price:0, standalonePrice:19.35, img:UP_IMG.kingNuggets,
+          { id:'king-nuggets', name:'King Nuggets® (6 pcs)', price:0, standalonePrice:4.50, img:UP_IMG.kingNuggets,
             desc:'King chicken nuggets, 6 pieces.', customizable:false }
         ] }
       ]
@@ -824,16 +867,16 @@
       id:'menu-2burger-nuggets',
       name:'2 Burgers of Your Choice + 2 Fries + 5 Nuggets',
       subtitle:'2 Burgers + 2 Fries + 5 Nuggets.',
-      regularPrice:129,
-      basePrice:116.10, // 30 - 10%
+      regularPrice: 30,
+      basePrice: 27, // 30 - 10%
       discount:'-10%',
       // Placeholder while the real per-item math is being finalised —
       // shows a fixed "Items sold separately" figure instead of the
       // computed one. Remove once the underlying item prices are final.
-      individualTotalOverride:150.50,
+      individualTotalOverride: 35,
       // Fries + nuggets are fixed (not a choice), but still count toward
       // what buying everything separately would cost.
-      extraStandaloneValue: 13.76*2 + 19.35,
+      extraStandaloneValue: 3.20*2 + 4.50,
       img: UP_IMG.twoBurgerNuggets,
       sections: [
         { id:'nb-burger1', title:'Burger 1', required:true, chooseText:'Choose 1 item', items: BURGER_ITEMS },
@@ -873,7 +916,7 @@
      stock photo of the same dish stands in — never an icon or illustration. */
   const PRODUCTS = {
     'whopper': {
-      id:'whopper', name:'Whopper®', price:38.27, img: UP_IMG.whopperStandalone,
+      id:'whopper', name:'Whopper®', price:8.90, img: UP_IMG.whopperStandalone,
       desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.',
       customizable:true,
       requiredChoice:{ title:'Sauce', chooseText:'Choose 1 item', options:[
@@ -883,7 +926,7 @@
         {id:'none', label:'No Sauce'}
       ]},
       removeOptions:DEFAULT_REMOVE,
-      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:4.30},{id:'extrabacon',label:'Extra Bacon',price:6.45},{id:'extracarne',label:'Extra Beef',price:10.75}],
+      addOptions:[{id:'extraqueso',label:'Extra Cheese',price:1.00},{id:'extrabacon',label:'Extra Bacon',price:1.50},{id:'extracarne',label:'Extra Beef',price:2.50}],
       // Size variants — solo burger vs. upgrading to a full menu. Picking
       // Medium/Large turns "Burger" into a fixed Whopper (still fully
       // customisable via its own Sauce/Remove/Add, just one level nested)
@@ -891,73 +934,137 @@
       // same pricing model as every other combo in the app. Solo keeps the
       // page exactly as it always was.
       sizes:[
-        { id:'solo', label:'Whopper', price:38.27, img:UP_IMG.whopperStandalone,
+        { id:'solo', label:'Whopper', price:8.90, img:UP_IMG.whopperStandalone,
           desc:'100% beef patty, fresh lettuce and tomato, mild onion and pickles.' },
-        { id:'medium', label:'Whopper Menu - Medium', price:43, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_MEDIUM, drinkItems:DRINK_ITEMS,
+        { id:'medium', label:'Whopper Menu - Medium', price:10.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_MEDIUM, drinkItems:DRINK_ITEMS,
           desc:'Whopper®, with medium fries and a drink of your choice.' },
-        { id:'large', label:'Whopper Menu - Large', price:47.30, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_LARGE, drinkItems:DRINK_ITEMS,
+        { id:'large', label:'Whopper Menu - Large', price:11.00, img:BK_IMG.whopperGrande, sideItems:SIDE_ITEMS_LARGE, drinkItems:DRINK_ITEMS,
           desc:'Whopper®, with large fries and a drink of your choice.' }
       ]
     },
     'menu-pulled-pork-onion-carne': {
-      id:'menu-pulled-pork-onion-carne', name:'Pulled Pork & Onion Meal (Beef Bun)', price:51.38, img:UP_IMG.pulledPorkOnionUp,
+      id:'menu-pulled-pork-onion-carne', name:'Pulled Pork & Onion Meal (Beef Bun)', price:11.95, img:UP_IMG.pulledPorkOnionUp,
       desc:'Pulled pork meal with onion rings, on a beef-style bun, with a drink and side of your choice.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-cheese-bacon-xxl': {
-      id:'menu-doble-cheese-bacon-xxl', name:'Double Cheese Bacon XXL® Meal', price:57.62, img:UP_IMG.dobleCheeseBaconXXL,
+      id:'menu-doble-cheese-bacon-xxl', name:'Double Cheese Bacon XXL® Meal', price:13.40, img:UP_IMG.dobleCheeseBaconXXL,
       desc:'Two beef patties, pickles, cheese, ketchup and mustard, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-duo-triple-carne': {
-      id:'menu-duo-triple-carne', name:'Large Duo Bacon Cheddar Triple Beef Meal', price:76.76, img:UP_IMG.duoTripleCarne,
+      id:'menu-duo-triple-carne', name:'Large Duo Bacon Cheddar Triple Beef Meal', price:17.85, img:UP_IMG.duoTripleCarne,
       desc:'Three beef patties, double bacon and cheddar on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-triple-whopper': {
-      id:'menu-triple-whopper', name:'Large Triple Whopper® Meal', price:72.88, img:UP_IMG.tripleWhopperUp,
+      id:'menu-triple-whopper', name:'Large Triple Whopper® Meal', price:16.95, img:UP_IMG.tripleWhopperUp,
       desc:'Three beef patties, lettuce, tomato, onion and pickles, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-spicy-triple': {
-      id:'menu-spicy-triple', name:'Large Spicy Whopper® (Triple Beef) Meal', price:72.88, img:UP_IMG.spicyTripleUp,
+      id:'menu-spicy-triple', name:'Large Spicy Whopper® (Triple Beef) Meal', price:16.95, img:UP_IMG.spicyTripleUp,
       desc:'Three beef patties, lettuce, tomato, onion, pickles and Sriracha sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'combo-pringles-carne': {
-      id:'combo-pringles-carne', name:'Pringles Sour Creamy Beef Combo', price:66, img:UP_IMG.pringlesCarneUp,
+      id:'combo-pringles-carne', name:'Pringles Sour Creamy Beef Combo', price:15.35, img:UP_IMG.pringlesCarneUp,
       desc:'Meal with flame-grilled beef, bacon, cheddar and double Pringles Sour Creamy sauce.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-steakhouse': {
-      id:'menu-doble-steakhouse', name:'Large Double Steakhouse Meal', price:62.35, img:UP_IMG.dobleSteakhouseUp,
+      id:'menu-doble-steakhouse', name:'Large Double Steakhouse Meal', price:14.50, img:UP_IMG.dobleSteakhouseUp,
       desc:'Two beef patties, crispy onions, bacon, cheddar and BBQ sauce on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-big-king-xxl': {
-      id:'menu-big-king-xxl', name:'Big King® XXL Meal', price:57.62, img:UP_IMG.bigKingXXLUp,
+      id:'menu-big-king-xxl', name:'Big King® XXL Meal', price:13.40, img:UP_IMG.bigKingXXLUp,
       desc:'2 beef patties, 4 slices of cheese, lettuce, pickles and Big King sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-doble-cheeseburger-bbq': {
-      id:'menu-doble-cheeseburger-bbq', name:'Large Double Cheeseburger BBQ Meal', price:40.85, img:UP_IMG.dobleCheeseburgerBBQUp,
+      id:'menu-doble-cheeseburger-bbq', name:'Large Double Cheeseburger BBQ Meal', price:9.50, img:UP_IMG.dobleCheeseburgerBBQUp,
       desc:'Two beef patties, cheese, pickles and BBQ sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-duo-doble-carne': {
-      id:'menu-duo-doble-carne', name:'Large Duo Bacon Cheddar Double Beef Meal', price:63.85, img:UP_IMG.duoDobleCarneUp,
+      id:'menu-duo-doble-carne', name:'Large Duo Bacon Cheddar Double Beef Meal', price:14.85, img:UP_IMG.duoDobleCarneUp,
       desc:'Two beef patties, double bacon and cheddar on a brioche bun, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-spicy-doble': {
-      id:'menu-spicy-doble', name:'Spicy Whopper® (Double Beef) Meal', price:59.98, img:UP_IMG.spicyDobleUp,
+      id:'menu-spicy-doble', name:'Spicy Whopper® (Double Beef) Meal', price:13.95, img:UP_IMG.spicyDobleUp,
       desc:'Two beef patties, lettuce, tomato, onion, pickles and Sriracha sauce, with a side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
     },
     'menu-pulled-pork-carne': {
-      id:'menu-pulled-pork-carne', name:'Pulled Pork Meal (Beef Bun)', price:49.23, img:UP_IMG.pulledPorkCarneUp,
+      id:'menu-pulled-pork-carne', name:'Pulled Pork Meal (Beef Bun)', price:11.45, img:UP_IMG.pulledPorkCarneUp,
       desc:'Pulled pork meal, 100% flame-grilled, with your choice of side and drink.',
       customizable:true, removeOptions:DEFAULT_REMOVE, addOptions:DEFAULT_ADD
+    },
+    /* ---------------- Combo Satisfyer (VICIO, Barcelona) ----------------
+       Real catalog pulled from VICIO's Glovo storefront. A flat-priced combo
+       (burger/side/drink choice never changes the price, same convention as
+       every other combo in this file) with an optional "Add extra sauce"
+       group riding on the standard addOptions mechanism. This is the sole
+       entry point of the simplified prototype. */
+    'combo-satisfyer': {
+      id:'combo-satisfyer', name:'Combo Satisfayer',
+      img:'combo-satisfyer-hero.png',
+      desc:'1 Burger + 1 Side + 1 Bebida.',
+      price:15.90,
+      customizable:true,
+      requiredGroups:[
+        { key:'burger', title:'Burger', chooseText:'Choose 1 item', options:[
+          { id:'vicio-originals', label:'VICIO Originals', img:'https://glovo.dhmedia.io/image/menus-glovo/products/3c8630103b94a4804a4ac8cb6c8392df7fb230b53ad4d5f2d17539d1eb1eeee5?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, lechuga francesa, tomate pera, cheddar, pepinillo y salsa VICIO en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'bacon-cheeseburger', label:'Bacon Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/99943af6bca27c679e84ebe0ec945d4b571cf37e075480a9b07333f3ae11d5d3?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, bacon crunchy, cheddar, pepinillo y salsa VICIO en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'cheeseburger', label:'Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/cff5868f40973505d047b0362bae6751e6caf467416b337a4886362c7eff2cbb?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, cheddar, pepinillo y salsa VICIO en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'single-burger', label:'Single Burger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/6c99b864cae8eedb4ea701b89e4424256e007dbc7d038839603fd328b0153239?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Una patty smash burger, cheddar, pepinillo, ketchup y mostaza, en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'bbq-bacon-cheeseburger', label:'BBQ Bacon Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/de51d902d62c16639afdda3135dcc5fe9125779689f41eac51cd61634c07cc63?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger con queso cheddar, bacon crunchy, pepinillo y nuestra salsa BBQ casera, ligeramente ahumada, en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'avocado-cheeseburger', label:'Avocado Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b6c89413614303d087940ae3ddf62d58107161b3a8a533c1bb2d64547a88ff0d?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, cheddar, aguacate aliñado, tomate pera y una veganesa de chipotle en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'vegan-burger', label:'Vegan Burger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/bf597346eda20b529c1bf7771ad2e3154adf2286b1d10d795df885bdbb11e5e9?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Beyond burger, loncha vegana estilo cheddar, aguacate aliñado, tomate pera y una veganesa de chipotle en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'cheeseburger-trufada', label:'Cheeseburger Trufada', img:'https://glovo.dhmedia.io/image/menus-glovo/products/a8825ef75c841c36d030f62ea3d69f4adb801dc2549b1a53931fdf9e12652793?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, huevo frito, cheddar y salsa a base de trufa negra en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'cheeseburger-iberica', label:'Cheeseburger Ibérica', img:'https://glovo.dhmedia.io/image/menus-glovo/products/87542127c88190e68bd3790d46dbe127491e02f3152dc98da90ec262c45af31b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger, paleta de jamón ibérico de bellota, cheddar, lechuga francesa, tomate pera, pepinillos y salsa mayo de tomate seco en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'vegan-truffle-burger', label:'Vegan Truffle Burger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/e972d5119d15ea1af15b8954f287359f03cda08f501a68e9176463048ebdfd5f?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Beyond burger, loncha vegana estilo cheddar, cebolla y shiitake salteados y una veganesa a base de trufa negra en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS },
+          { id:'spicy-burger', label:'Spicy Burger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/9e5f990d87c11631d04949be02fd04523bf38bd512ca3e89ed667f09295960eb?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Doble smash burger con queso cheddar, bacon crunchy, chiles peruanos con cebolla y salsa picante de ají amarillo en un delicioso pan brioche.',
+            customizable:true, removeOptions:VICIO_DEFAULT_REMOVE, addOptions:VICIO_DEFAULT_ADD, quickOptions:VICIO_QUICK_OPTIONS }
+        ] },
+        { key:'side', title:'Side', chooseText:'Choose 1 item', options:[
+          { id:'vicio-fries', label:'VICIO Fries', img:'https://glovo.dhmedia.io/image/menus-glovo/products/ba9e796fd086b24d52af1c54c8b39050e520adcf62aee9d7571c111a828612ec?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'smoked-bacon-cheese-fries', label:'Smoked Bacon Cheese Fries', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b0794490875e0c170d31b5181100d1e7128d723876ed5c1219311376a0702752?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'truffle-parmesan-fries', label:'Truffle Parmesan Fries', img:'https://glovo.dhmedia.io/image/global-menu-service/GV_ES/vendor/807082/product/41767666368/abb0f419-d047-43bb-8150-ffdcc92d30b8.jpg?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'alitas-bbq', label:'Alitas BBQ a baja temperatura', img:'https://glovo.dhmedia.io/image/menus-glovo/products/f801587cf1813d0a1f8259e879fd481ddbfccf5258868105eba70d8e563266fa?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' }
+        ] },
+        { key:'drink', title:'Drink', chooseText:'Choose 1 item', options:[
+          { id:'coca-cola-vicio', label:'Coca-Cola', img:'https://glovo.dhmedia.io/image/menus-glovo/products/9f11f6a06b3bad39730b6d1bcdb59e0a92dfbe93cca971ef6257f1963d12e6b0?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'coca-cola-zero-vicio', label:'Coca-Cola Zero', img:'https://glovo.dhmedia.io/image/global-menu-service/GV_ES/vendor/807082/product/41767666363/6bcc6884-f740-47fa-8ace-b6ffe9e16bd4.jpg?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'fanta-naranja-vicio', label:'Fanta Naranja', img:'https://glovo.dhmedia.io/image/menus-glovo/products/59f27f051022e0f116984006c93a0c0ee3917d8c772700d285802c8233df5769?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'agua-vicio', label:'Agua', img:'https://glovo.dhmedia.io/image/menus-glovo/products/4ebf78eb6a645c337ba503f2d8be97d512b1585c3b07a100f83013ac31efd90d?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'aquarius-vicio', label:'Aquarius', img:'https://glovo.dhmedia.io/image/menus-glovo/products/9d80bf19b708a83fd51ddccbcf280b5737d23aed6dfb71f2b3ce370a80b162b6?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'estrella-damm', label:'Estrella Damm', img:'https://glovo.dhmedia.io/image/menus-glovo/products/0b7f8cebaaea742185d93fdd35e07703bb9af22b5adf82434f928e6e04a19882?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' }
+        ] }
+      ]
     }
   };
 
@@ -999,7 +1106,7 @@
 
   function freshState(){
     return {
-      stack: [{type:'menu'}],
+      stack: [{type:'product', productId:'combo-satisfyer'}],
       activeTab: 'promotions',
       qty: 1,
       cartItems: [], // [{ id, comboId, qty, sections }]
@@ -1032,7 +1139,7 @@
   function comboSectionSummary(sections){ return sections.map(s=>itemDef(s.id, s.itemId).name).join(', '); }
 
   function fmt(n){
-    return n.toFixed(2).replace('.', ',') + ' zł';
+    return n.toFixed(2).replace('.', ',') + ' €';
   }
 
   function sectionExtra(sectionId, overrideDraft){
@@ -1078,6 +1185,21 @@
       const opt = (product.addOptions||[]).find(o=>o.id===addId);
       if(opt) total += opt.price;
     });
+    // Nested per-group item customisation add-ons — e.g. Combo Satisfyer's
+    // chosen Burger can have its own Extra Cheddar/Extra Bacon on top of
+    // the product-level sauce add-ons above (draft.add).
+    if(product.requiredGroups){
+      product.requiredGroups.forEach(g=>{
+        const selectedId = draft[g.key+'ItemId'];
+        if(!selectedId) return;
+        const opt = g.options.find(o=>o.id===selectedId);
+        if(!opt || !opt.addOptions) return;
+        (draft[g.key+'Add']||[]).forEach(addId=>{
+          const addOpt = opt.addOptions.find(o=>o.id===addId);
+          if(addOpt) total += addOpt.price;
+        });
+      });
+    }
     return total;
   }
 
@@ -1231,14 +1353,27 @@
   // section's own title/summary is at the top of the viewport. Since it's
   // now collapsed down to a compact summary, the next required section's
   // title ends up visible right underneath, without hiding the feedback.
-  function scrollToSectionSummary(sectionId, delayMs){
-    setTimeout(()=>{
-      raf(()=>{
-        const target = document.querySelector('[data-section-anchor="'+sectionId+'"]')
-          || document.querySelector('[data-combo-footer]');
-        if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
-      });
-    }, delayMs || 0);
+  //
+  // Normally this is an instant jump, not an animated scroll: the screen
+  // already just re-appeared (either the nested page finished popping, or
+  // the section itself just finished its own collapse animation), so
+  // gliding the viewport on top of that reads as an extra, redundant
+  // motion — it should just already be sitting at the right spot. The one
+  // exception is `soft` (the last required group, where there's nothing
+  // below it to reveal — the browser has to clamp the scroll short of the
+  // target's true "top" position). Landing on that clamped position
+  // instantly can look like a mis-placed snap, so that specific case gets
+  // a gentler smooth-scroll instead.
+  function scrollToSectionSummary(sectionId, delayMs, soft){
+    function go(){
+      const target = document.querySelector('[data-section-anchor="'+sectionId+'"]')
+        || document.querySelector('[data-combo-footer]');
+      if(target && typeof target.scrollIntoView === 'function'){
+        target.scrollIntoView({behavior: soft ? 'smooth' : 'auto', block:'start'});
+      }
+    }
+    if(soft) setTimeout(()=>{ raf(go); }, delayMs || 0);
+    else raf(go);
   }
 
   // A section counts toward "required customisations" progress as soon as
@@ -1296,6 +1431,7 @@
     if(screen.type==='detail') return renderDetailScreen(screen);
     if(screen.type==='product') return renderProductScreen(screen);
     if(screen.type==='product-item') return renderProductItemScreen(screen);
+    if(screen.type==='group-item') return renderGroupItemScreen(screen);
     if(screen.type==='cart') return renderCartScreen();
     if(screen.type==='checkout') return renderCheckoutScreen(screen);
     if(screen.type==='gallery') return renderGalleryScreen(screen);
@@ -1350,7 +1486,11 @@
       + '<circle cx="12" cy="17.3" r="1.15" fill="#fff"/>'
       + '</svg>';
   }
-  function chevronLeftIcon(){ return ic('chevronBackward', 18, 'var(--icon-color-foreground-primary)'); }
+  function chevronLeftIcon(){
+    return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      + '<path fill-rule="evenodd" clip-rule="evenodd" d="M11.7438 5.25629C12.0855 5.598 12.0855 6.15202 11.7438 6.49372L7.11246 11.125H19C19.4832 11.125 19.875 11.5168 19.875 12C19.875 12.4832 19.4832 12.875 19 12.875H7.11246L11.7438 17.5063C12.0855 17.848 12.0855 18.402 11.7438 18.7437C11.4021 19.0854 10.8481 19.0854 10.5064 18.7437L4.38129 12.6187C4.21719 12.4546 4.125 12.2321 4.125 12C4.125 11.7679 4.21719 11.5454 4.38129 11.3813L10.5064 5.25628C10.8481 4.91457 11.4021 4.91458 11.7438 5.25629Z" fill="var(--icon-color-foreground-primary)"/>'
+      + '</svg>';
+  }
   // Per the Figma expander reference, the chevron sits at icon-size-m
   // (24px) inside a 40px tap target — not the 16px glyph used elsewhere.
   function chevronDownIcon(){ return ic('chevronDown', 24, 'var(--icon-color-foreground-primary)'); }
@@ -1359,8 +1499,8 @@
   // nested customisation) uses a bigger right chevron than the small one
   // used elsewhere (top sellers, "Show details", checkout rows).
   function chevronRightIconLarge(){ return ic('chevronForward', 24, 'var(--icon-color-foreground-secondary)'); }
-  function closeIcon(){ return ic('cross', 16, 'var(--icon-color-foreground-primary)'); }
-  function expandIcon(){ return ic('arrowsExpand', 15, 'var(--icon-color-foreground-primary)'); }
+  function closeIcon(){ return ic('cross', 24, 'var(--icon-color-foreground-primary)'); }
+  function expandIcon(){ return ic('arrowsExpand', 24, 'var(--icon-color-foreground-primary)'); }
   function boxIcon(){ return '<span style="display:inline-flex;vertical-align:-3px;">'+ic('bag', 14, 'var(--icon-color-foreground-positive)')+'</span>'; }
   function trashIcon(){ return ic('trash', 16, 'var(--icon-color-foreground-primary)'); }
   function editIcon(){ return ic('edit', 16, 'var(--icon-color-foreground-primary)'); }
@@ -1421,7 +1561,7 @@
             <div class="prod-name">${combo.name}</div>
             <div style="text-align:right;">
               <div class="prod-price">${fmt(combo.basePrice)}</div>
-              ${combo.regularPrice ? `<span class="prod-price-old">${combo.regularPrice.toFixed(2).replace('.',',')} zł</span>`:''}
+              ${combo.regularPrice ? `<span class="prod-price-old">${combo.regularPrice.toFixed(2).replace('.',',')}€</span>`:''}
             </div>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -1451,7 +1591,7 @@
             <div class="prod-name">${product.name}</div>
             <div style="text-align:right;">
               <div class="prod-price">${fmt(product.price)}</div>
-              ${product.oldPrice ? `<span class="prod-price-old">${product.oldPrice.toFixed(2).replace('.',',')} zł</span>`:''}
+              ${product.oldPrice ? `<span class="prod-price-old">${product.oldPrice.toFixed(2).replace('.',',')}€</span>`:''}
             </div>
           </div>
           ${product.discount ? `<div>${pintxoTag(product.discount,'critical','primary')}</div>`:''}
@@ -1645,9 +1785,9 @@
 
     return `
       <div class="screen active">
+        ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
         <div class="screen-scroll">
           <div class="cb-header">
-            ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
             <div class="cb-hero-wrap">
               <img class="cb-hero" src="${combo.img}" alt="${combo.name}" data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="false">
               <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="combo" data-combo="${state.activeComboId}" data-info="false"`})}</div>
@@ -1658,7 +1798,7 @@
             <div class="cb-subtitle">${combo.subtitle}</div>
             <div class="cb-price-row">
               <span class="cb-price">${fmt(unit)}</span>
-              ${regularUnit!=null ? `<span class="cb-price-old">${regularUnit.toFixed(2).replace('.',',')} zł</span>`:''}
+              ${regularUnit!=null ? `<span class="cb-price-old">${regularUnit.toFixed(2).replace('.',',')}€</span>`:''}
               ${combo.discount ? pintxoTag(combo.discount,'critical','primary') : ''}
             </div>
             ${(individualTotal>0 && savings>0 && !combo.discount) ? `
@@ -1701,7 +1841,7 @@
         <div class="summary-custom-top">
           <div class="summary-custom-text-col">
             <div class="summary-custom-name">${custom.join(', ')}</div>
-            ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')} zł</div>`:''}
+            ${addPrice>0?`<div class="summary-custom-price">+ ${addPrice.toFixed(2).replace('.',',')}€</div>`:''}
           </div>
           ${pintxoButton({label:'Edit', variant:'neutral', size:'xs', action:editAction})}
         </div>
@@ -1717,7 +1857,30 @@
   // opens/closes when the user taps the header themselves, same chevron and
   // animateSectionToggle as the combo sections. `key` doubles as the
   // data-section-anchor and the draft flag name (`${key}Open`).
-  function renderOptionalGroup(key, title, listHtml, isOpen, isFirst){
+  function renderOptionalGroup(key, title, listHtml, isOpen, isFirst, selectedOptions){
+    // Collapsing this group manually shouldn't hide what's already been
+    // chosen — but per the latest design decision, it's shown the same way
+    // any other customised selection is: the shared "No Pickles, Extra
+    // Cheese ... Edit" summary component (comma-joined names, total extra
+    // cost, Edit reopens the group), not individual checkbox rows. Same
+    // component whether the expanded view underneath is checkboxes or a
+    // quantity counter — only the collapsed text differs (e.g. "2x Extra
+    // Patty, 1x Extra tomato").
+    let summaryHtml = '';
+    if(!isOpen && selectedOptions && selectedOptions.length){
+      const names = selectedOptions.map(o=>o.label);
+      const price = selectedOptions.reduce((sum,o)=>sum+(o.price||0),0);
+      summaryHtml = `
+        <div class="selected-summary" style="padding:var(--component-listItem-padding-vertical-l) 0;">
+          <div class="summary-custom-top">
+            <div class="summary-custom-text-col">
+              <div class="summary-custom-name">${names.join(', ')}</div>
+              ${price>0 ? `<div class="summary-custom-price">+ ${price.toFixed(2).replace('.',',')}€</div>` : ''}
+            </div>
+            ${pintxoButton({label:'Edit', variant:'neutral', size:'xs', action:`data-action="toggle-group" data-group="${key}"`})}
+          </div>
+        </div>`;
+    }
     return `
       <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
         <div class="pintxo-expander-header" data-action="toggle-group" data-group="${key}">
@@ -1727,7 +1890,7 @@
           </div>
           <span class="pintxo-expander-header__trailing-accessory" data-open="${isOpen}">${chevronDownIcon()}</span>
         </div>
-        ${isOpen ? `<div class="item-list">${listHtml}</div>` : ''}
+        ${isOpen ? `<div class="item-list">${listHtml}</div>` : summaryHtml}
       </div>`;
   }
 
@@ -1742,30 +1905,45 @@
   // `galleryCtx` (only set for Side/Drink) is {productId,sizeId} — lets each
   // option's thumbnail open the gallery with its own title+description,
   // same as tapping a nested item's thumbnail inside a combo section.
-  function renderRequiredPickGroup(key, title, chooseText, options, selectedId, isOpen, isFirst, galleryCtx){
+  function renderRequiredPickGroup(key, title, chooseText, options, selectedId, isOpen, isFirst, galleryCtx, customRowFn){
     const hasChoice = !!selectedId;
     const chosen = hasChoice ? options.find(o=>o.id===selectedId) : null;
     const galleryAction = (o)=> galleryCtx
       ? `data-action="open-gallery" data-source="size-item" data-product="${galleryCtx.productId}" data-size="${galleryCtx.sizeId}" data-group="${key}" data-item="${o.id}" data-info="true"`
       : '';
+    // Optional per-item nested customisation (e.g. Combo Satisfyer's Burger
+    // options, which can be Sauce/Remove/Add-customised one level deeper —
+    // see renderGroupItemScreen). Same "No Pickles ... Edit" component as
+    // the combo sections use, rendered under the selected option either
+    // way (open item list or collapsed summary), same as renderSectionBlock.
+    const customRow = (o)=> customRowFn ? customRowFn(o) : '';
     let bodyHtml = '';
     if(isOpen){
-      bodyHtml = `<div class="item-list">` + options.map(o=>`
+      bodyHtml = `<div class="item-list">` + options.map(o=>{
+        let row = `
           <div class="pintxo-list-item" data-actionable="true" data-action="required-group-pick" data-group="${key}" data-opt="${o.id}">
             ${o.img ? `<div class="pintxo-list-item__leading-content"><img class="item-thumb" src="${o.img}" alt="${o.label}" ${galleryAction(o)}></div>` : ''}
             <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
             <div class="pintxo-list-item__trailing-content">${pintxoRadio(selectedId===o.id, `data-action="required-group-pick" data-group="${key}" data-opt="${o.id}"`)}</div>
-          </div>`).join('') + `</div>`;
+          </div>`;
+        if(selectedId===o.id){
+          const custom = customRow(o);
+          if(custom) row += `<div style="padding:0 var(--spacing-xs);">${custom}</div>`;
+        }
+        return row;
+      }).join('') + `</div>`;
     } else if(chosen){
+      const chosenCustomRow = customRow(chosen);
       bodyHtml = `
-        <div class="selected-summary" style="padding:0 0 6px;">
+        <div class="selected-summary" style="padding:var(--component-listItem-padding-vertical-l) 0;">
           <div class="summary-row">
-            ${chosen.img ? `<img class="item-thumb" src="${chosen.img}" alt="${chosen.label}" ${galleryAction(chosen)}>` : ''}
-            <div class="summary-mid" data-action="toggle-group" data-group="${key}">
+            ${chosen.img ? `<img class="item-thumb" src="${chosen.img}" alt="${chosen.label}" data-action="open-group-item-view" data-group="${key}" data-opt="${chosen.id}">` : ''}
+            <div class="summary-mid" data-action="open-group-item-view" data-group="${key}" data-opt="${chosen.id}">
               <div class="summary-name">${chosen.label}</div>
             </div>
             ${pintxoRadio(true, `data-action="toggle-group" data-group="${key}"`)}
           </div>
+          ${chosenCustomRow ? `<div style="padding-top:var(--spacing-xxs);">${chosenCustomRow}</div>` : ''}
         </div>`;
     }
     return `
@@ -1799,7 +1977,8 @@
             <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.remove.includes(o.id), `data-action="toggle-product-remove" data-opt="${o.id}"`)}</div>
           </div>`).join('');
-      ingHtml += renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !product.requiredChoice);
+      const removeSelected = product.removeOptions.filter(o=>draft.remove.includes(o.id));
+      ingHtml += renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !product.requiredChoice, removeSelected);
     }
     if(product.addOptions){
       const addListHtml = product.addOptions.map(o=>`
@@ -1807,12 +1986,13 @@
             <div class="pintxo-list-item__body-content">
               <span class="pintxo-list-item__body__title" style="flex-direction:column;">
                 <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
-                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')} zł</span>
+                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
               </span>
             </div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-product-add" data-opt="${o.id}"`)}</div>
           </div>`).join('');
-      ingHtml += renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, !product.requiredChoice && !product.removeOptions);
+      const addSelected = product.addOptions.filter(o=>draft.add.includes(o.id));
+      ingHtml += renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, !product.requiredChoice && !product.removeOptions, addSelected);
     }
     return requiredHtml + ingHtml;
   }
@@ -1856,7 +2036,7 @@
           <div class="summary-row">
             <img class="item-thumb" src="${item.img}" data-action="open-item-view" data-section="${sd.id}" data-item="${item.id}">
             <div class="summary-mid" data-action="open-item-view" data-section="${sd.id}" data-item="${item.id}">
-              <div class="summary-name">${item.name}${item.price>0?` <span class="item-extra pintxo-typography-caption" style="color:var(--text-color-secondary);">+${item.price.toFixed(2).replace('.',',')} zł</span>`:''}</div>
+              <div class="summary-name">${item.name}${item.price>0?` <span class="item-extra pintxo-typography-caption" style="color:var(--text-color-secondary);">+${item.price.toFixed(2).replace('.',',')}€</span>`:''}</div>
             </div>
             ${pintxoRadio(true, `data-action="reopen-section" data-section="${sd.id}"`)}
           </div>
@@ -1894,7 +2074,7 @@
           <span class="pintxo-list-item__body__title" style="flex-direction:column;">
             <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${item.name}</span>
             ${item.tag?`<span style="margin-top:2px;">${pintxoTag(item.tag,'neutral','primary')}</span>`:''}
-            ${item.price>0?`<span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${item.price.toFixed(2).replace('.',',')} zł</span>`:''}
+            ${item.price>0?`<span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${item.price.toFixed(2).replace('.',',')}€</span>`:''}
           </span>
         </div>
         <div class="pintxo-list-item__trailing-content">${pintxoRadio(selected, `data-action="item-radio" data-section="${sd.id}" data-item="${item.id}"`)}</div>
@@ -1959,7 +2139,7 @@
                     ${pintxoRadio(selected)}
                   </div>
                   <div class="quick-card-desc">${q.desc}</div>
-                  <div class="quick-card-price">+${price.toFixed(2).replace('.',',')} zł</div>
+                  <div class="quick-card-price">+${price.toFixed(2).replace('.',',')}€</div>
                 </div>
               </div>`;
             }).join('')}
@@ -1975,7 +2155,7 @@
             <div class="pintxo-list-item__body-content">
               <span class="pintxo-list-item__body__title" style="flex-direction:column;">
                 <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
-                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')} zł</span>
+                <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
               </span>
             </div>
             <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-add" data-opt="${o.id}"`)}</div>
@@ -1983,17 +2163,19 @@
       // "Remove ingredient" is the first customisation group only when
       // there's no quick-pick row above it — same half-margin-under-the-
       // header treatment as the combo screen's first section.
-      ingHtml = renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml)
-        + renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, false);
+      const removeSelected = item.removeOptions.filter(o=>draft.remove.includes(o.id));
+      const addSelected = item.addOptions.filter(o=>draft.add.includes(o.id));
+      ingHtml = renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml, removeSelected)
+        + renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, false, addSelected);
     }
 
-    const ctaLabel = alreadySelected ? 'Confirm' : (item.customizable ? 'Confirm' : 'Select');
+    const ctaLabel = 'Select';
 
     return `
       <div class="screen active">
+        ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
         <div class="screen-scroll">
           <div class="detail-header">
-            ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
               <img class="detail-hero" src="${item.img}" alt="${item.name}" data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="false">
               <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-section="${sectionId}" data-item="${itemId}" data-info="false"`})}</div>
@@ -2033,7 +2215,12 @@
       sideItemId: entry ? (entry.sideItemId || null) : null,
       drinkItemId: entry ? (entry.drinkItemId || null) : null,
       sideOpen: entry ? !entry.sideItemId : true,
-      drinkOpen: entry ? !entry.drinkItemId : true
+      drinkOpen: entry ? !entry.drinkItemId : true,
+      // Generic required-pick groups (Combo Satisfyer's Burger/Side/Drink
+      // choice, rendered directly on the main product page instead of a
+      // combo builder screen) — same shape as sideItemId/drinkItemId above.
+      burgerItemId: entry ? (entry.burgerItemId || null) : null,
+      burgerOpen: entry ? !entry.burgerItemId : true
     };
   }
 
@@ -2051,8 +2238,10 @@
     if(draft.sizeId===undefined) draft.sizeId = 'solo';
     if(draft.sideOpen===undefined) draft.sideOpen = !draft.sideItemId;
     if(draft.drinkOpen===undefined) draft.drinkOpen = !draft.drinkItemId;
+    if(draft.burgerOpen===undefined) draft.burgerOpen = !draft.burgerItemId;
 
     const hasSizes = !!product.sizes;
+    const hasGroups = !!product.requiredGroups;
     const sizeConf = hasSizes ? product.sizes.find(s=>s.id===draft.sizeId) : null;
     const sized = hasSizes && draft.sizeId!=='solo'; // upgraded to a Medium/Large menu
     // Hero photo and description swap with the chosen size, same as price —
@@ -2111,11 +2300,34 @@
       sideDrinkHtml = renderRequiredPickGroup('side', 'Side', 'Customize item', sideOptions, draft.sideItemId, draft.sideOpen, false, galleryCtx)
         + renderRequiredPickGroup('drink', 'Drink', 'Customize item', drinkOptions, draft.drinkItemId, draft.drinkOpen, false, galleryCtx);
     }
-    const bodyHtml = sized ? (burgerHtml + sideDrinkHtml) : renderProductCustomizationBody(product, draft);
+    let bodyHtml;
+    if(sized){
+      bodyHtml = burgerHtml + sideDrinkHtml;
+    } else if(hasGroups){
+      // Combo Satisfyer: Burger/Side/Drink as three parallel required
+      // single-choice groups, rendered right on the main product page —
+      // same renderRequiredPickGroup used for Whopper's Side/Drink, just
+      // with no size carousel and no nested "Burger" sub-page. Any
+      // optional add-ons (extra sauces) ride along via the standard
+      // addOptions mechanism, same as every other customisable product.
+      const groupsHtml = product.requiredGroups.map((g,i)=>{
+        // Only options that opted into it (Combo Satisfyer's Burger picks)
+        // get a nested customisation row; Side/Drink options simply have no
+        // removeOptions/addOptions, so this quietly renders nothing for them.
+        const customRowFn = (o)=> o.customizable
+          ? customRowHtml(o, {remove: draft[g.key+'Remove']||[], add: draft[g.key+'Add']||[]}, `data-action="required-group-pick" data-group="${g.key}" data-opt="${o.id}"`)
+          : '';
+        return renderRequiredPickGroup(g.key, g.title, g.chooseText, g.options, draft[g.key+'ItemId'], draft[g.key+'Open'], i===0, undefined, customRowFn);
+      }).join('');
+      bodyHtml = groupsHtml + renderProductCustomizationBody(product, draft);
+    } else {
+      bodyHtml = renderProductCustomizationBody(product, draft);
+    }
 
-    // "Required selections" footer banner, same idea as the combo builder's
-    // — only relevant once a size upgrade has actually added more required
-    // picks (Burger's own sauce, Side, Drink) beyond what solo needs.
+    // "Required selections" banner — same idea as the combo builder's,
+    // shown either once a size upgrade adds more required picks, or for a
+    // hasGroups product like Combo Satisfyer where Burger/Side/Drink are
+    // always required from the start.
     let bannerHtml = '';
     if(sized){
       const burgerComplete = !product.requiredChoice || !!draft.requiredChoiceId;
@@ -2123,17 +2335,21 @@
       if(remaining>0){
         bannerHtml = `<div class="req-info-row pintxo-typography-body2">Required selections: <b>${remaining}</b></div>`;
       }
+    } else if(hasGroups){
+      const remaining = product.requiredGroups.filter(g=>!draft[g.key+'ItemId']).length;
+      if(remaining>0){
+        bannerHtml = `<div class="req-info-row pintxo-typography-body2">Required selections: <b>${remaining}</b></div>`;
+      }
     }
 
     const unit = productUnitTotal(product, draft);
     const total = unit * draft.qty;
-    const ctaLabel = screen.editingCartId ? 'Confirm' : 'Add';
 
     return `
       <div class="screen active">
+        ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
         <div class="screen-scroll">
           <div class="cb-header">
-            ${pintxoIconButton({icon:closeIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
             <div class="cb-hero-wrap">
               <img class="cb-hero" src="${displayImg}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-size="${draft.sizeId}" data-info="false">
               <div class="cb-expand">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-size="${draft.sizeId}" data-info="false"`})}</div>
@@ -2151,7 +2367,7 @@
           ${bannerHtml}
           <div class="footer-row">
             ${pintxoCounter(draft.qty, 'data-action="product-qty-decr"', 'data-action="product-qty-incr"')}
-            <div style="flex:1;">${pintxoButton({label:ctaLabel+' · '+fmt(total), variant:'primary', size:'m', block:true, action:'data-action="confirm-product"'})}</div>
+            <div style="flex:1;">${pintxoButton({label:'Add · '+fmt(total), variant:'primary', size:'m', block:true})}</div>
           </div>
         </div>
       </div>`;
@@ -2168,9 +2384,9 @@
     const draft = screen.draft;
     return `
       <div class="screen active">
+        ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
         <div class="screen-scroll">
           <div class="detail-header">
-            ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', attrs:'style="margin-bottom:10px;"'})}
             <div class="detail-hero-wrap">
               <img class="detail-hero" src="${product.img}" alt="${product.name}" data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="false">
               <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="product" data-product="${screen.productId}" data-info="false"`})}</div>
@@ -2188,6 +2404,117 @@
           </div>
         </div>
       </div>`;
+  }
+
+  /* ---- Group-item screen (nested customisation for a required-pick-group
+     option that has its own removeOptions/addOptions — e.g. Combo
+     Satisfyer's Burger choice). This is the same "nested product page"
+     pattern the original Burger King combos used (renderDetailScreen +
+     selectItem + confirm-item), just re-keyed to a product's
+     requiredGroups instead of a combo's sections: a fresh, separate draft
+     that only gets applied to the parent product screen's draft when
+     Select/Confirm is actually tapped — going back without confirming
+     discards it, exactly like a combo section's detail page. ---- */
+  function renderGroupItemScreen(screen){
+    const product = PRODUCTS[screen.productId];
+    const group = product.requiredGroups.find(g=>g.key===screen.groupKey);
+    const item = group.options.find(o=>o.id===screen.itemId);
+    const draft = screen.draft;
+    if(draft.removeOpen===undefined) draft.removeOpen = true;
+    if(draft.addOpen===undefined) draft.addOpen = true;
+    if(draft.quickId===undefined) draft.quickId = null;
+
+    // "Customise it quickly" — same shortcut cards the original combo
+    // items had, brought back as-is for the Burger's nested customisation.
+    let quickHtml = '';
+    if(item.quickOptions && item.quickOptions.length){
+      quickHtml = `
+        <div class="quick-heading">Customise it quickly</div>
+        <div class="quick-sub">You can still make changes after selecting an option</div>
+        <div class="quick-row">
+          ${item.quickOptions.map(q=>{
+            const price = (q.add||[]).reduce((sum,id)=>{
+              const opt=(item.addOptions||[]).find(o=>o.id===id); return sum+(opt?opt.price:0);
+            },0);
+            const selected = draft.quickId===q.id;
+            return `
+            <div class="pintxo-selectable-card" data-state="${selected?'selected':'unselected'}" data-action="group-quick-pick" data-quick="${q.id}">
+              <div class="pintxo-selectable-card__container">
+                <div class="pintxo-selectable-card__container__top">
+                  <div class="quick-card-label">${q.label}</div>
+                  ${pintxoRadio(selected)}
+                </div>
+                <div class="quick-card-desc">${q.desc}</div>
+                <div class="quick-card-price">+${price.toFixed(2).replace('.',',')}€</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    }
+
+    const removeListHtml = (item.removeOptions||[]).map(o=>`
+        <div class="pintxo-list-item" data-actionable="true" data-action="toggle-group-item-remove" data-opt="${o.id}">
+          <div class="pintxo-list-item__body-content"><span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span></div>
+          <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.remove.includes(o.id), `data-action="toggle-group-item-remove" data-opt="${o.id}"`)}</div>
+        </div>`).join('');
+    const addListHtml = (item.addOptions||[]).map(o=>`
+        <div class="pintxo-list-item" data-actionable="true" data-action="toggle-group-item-add" data-opt="${o.id}">
+          <div class="pintxo-list-item__body-content">
+            <span class="pintxo-list-item__body__title" style="flex-direction:column;">
+              <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
+              <span class="pintxo-list-item__body__title__extra-info pintxo-typography-body1">+ ${o.price.toFixed(2).replace('.',',')}€</span>
+            </span>
+          </div>
+          <div class="pintxo-list-item__trailing-content">${pintxoCheckbox(draft.add.includes(o.id), `data-action="toggle-group-item-add" data-opt="${o.id}"`)}</div>
+        </div>`).join('');
+    const removeSelected = (item.removeOptions||[]).filter(o=>draft.remove.includes(o.id));
+    const addSelected = (item.addOptions||[]).filter(o=>draft.add.includes(o.id));
+    const ingHtml = renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml, removeSelected)
+      + renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, false, addSelected);
+
+    // Always "Select" here — this page's job is finalising the chosen
+    // item's customisation (remove/add), not the item choice itself (that
+    // already happened by tapping into this page). Any extra ingredient
+    // add-ons ride along in the label, same as the rest of the app's
+    // "Add · <price>"-style CTAs.
+    const addPrice = (item.addOptions||[]).filter(o=>draft.add.includes(o.id)).reduce((sum,o)=>sum+o.price,0);
+    const ctaLabel = 'Select' + (addPrice>0 ? ' + '+addPrice.toFixed(2).replace('.',',')+'€' : '');
+
+    return `
+      <div class="screen active">
+        ${pintxoIconButton({icon:chevronLeftIcon(), size:'s', variant:'floating', action:'data-action="pop"', className:'cb-back'})}
+        <div class="screen-scroll">
+          <div class="detail-header">
+            <div class="detail-hero-wrap">
+              <img class="detail-hero" src="${item.img}" alt="${item.label}" data-action="open-gallery" data-source="group-item" data-product="${screen.productId}" data-group="${screen.groupKey}" data-item="${screen.itemId}" data-info="false">
+              <div class="cb-expand" style="right:16px;bottom:16px;">${pintxoIconButton({icon:expandIcon(), size:'s', variant:'floating', action:`data-action="open-gallery" data-source="group-item" data-product="${screen.productId}" data-group="${screen.groupKey}" data-item="${screen.itemId}" data-info="false"`})}</div>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-title">${item.label}</div>
+            <div class="detail-desc">${item.desc||''}</div>
+            ${quickHtml}
+            ${ingHtml}
+          </div>
+        </div>
+        <div class="screen-footer">
+          <div class="footer-row">
+            <div style="flex:1;">${pintxoButton({label:ctaLabel, variant:'primary', size:'m', block:true, action:`data-action="confirm-group-item" data-group="${screen.groupKey}" data-item="${screen.itemId}"`})}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Finalises a group-item nested customisation — same shape as selectItem,
+  // just applied onto the parent product screen's draft (draft[key+'ItemId']
+  // etc.) instead of a combo section's state.sections entry.
+  function selectGroupItem(parentDraft, groupKey, itemId, remove, add, scrollDelay, soft){
+    parentDraft[groupKey+'ItemId'] = itemId;
+    parentDraft[groupKey+'Remove'] = remove || [];
+    parentDraft[groupKey+'Add'] = add || [];
+    parentDraft[groupKey+'Open'] = false;
+    render();
+    if(scrollDelay !== undefined) scrollToSectionSummary(groupKey, scrollDelay, soft);
   }
 
   /* ---- Cart screen ---- */
@@ -2275,8 +2602,8 @@
     const subtotal = cartGrandTotal();
     const regularTotal = cartRegularTotal();
     const promoSavings = regularTotal - subtotal;
-    const delivery = 8.56;
-    const services = 1.29;
+    const delivery = 1.99;
+    const services = 0.30;
     const payTotal = subtotal + delivery + services;
 
     const orderLinesHtml = rows.map(r=>{
@@ -2516,6 +2843,14 @@
           const list = group==='side' ? sizeConf.sideItems : sizeConf.drinkItems;
           const item = list.find(it=>it.id===el.getAttribute('data-item'));
           img = item.img; name = item.name; desc = item.desc;
+        } else if(source==='group-item'){
+          // A requiredGroups option (Combo Satisfyer's Burger/Side/Drink),
+          // resolved from the product's own requiredGroups data — same idea
+          // as size-item above, just for the non-sized product page.
+          const product = PRODUCTS[el.getAttribute('data-product')];
+          const group = product.requiredGroups.find(g=>g.key===el.getAttribute('data-group'));
+          const item = group.options.find(o=>o.id===el.getAttribute('data-item'));
+          img = item.img; name = item.label; desc = item.desc;
         } else {
           const item = itemDef(el.getAttribute('data-section'), el.getAttribute('data-item'));
           img = item.img; name = item.name; desc = item.desc;
@@ -2711,6 +3046,10 @@
         draft.quickId=null;
         const idx = draft.remove.indexOf(optId);
         if(idx>-1) draft.remove.splice(idx,1); else draft.remove.push(optId);
+        // Tapping a checkbox from the collapsed summary (an already-checked
+        // item being unchecked) re-expands the group so the full list is
+        // visible again — a no-op if it was already open.
+        draft.removeOpen = true;
         render();
         return;
       }
@@ -2720,6 +3059,7 @@
         draft.quickId=null;
         const idx = draft.add.indexOf(optId);
         if(idx>-1) draft.add.splice(idx,1); else draft.add.push(optId);
+        draft.addOpen = true;
         render();
         return;
       }
@@ -2747,13 +3087,46 @@
         const key = el.getAttribute('data-group');
         const optId = el.getAttribute('data-opt');
         const draft = screen.draft;
+        // If the tapped option carries its own removeOptions/addOptions
+        // (Combo Satisfyer's Burger picks), it works exactly like a
+        // customizable item inside a Burger King combo section: push a
+        // nested customisation page instead of selecting instantly. Also
+        // used to reopen that same page for editing an already-chosen,
+        // already-customised option (see the "Edit" button built by
+        // customRowHtml, which points right back at this same action).
+        const product = PRODUCTS[screen.productId];
+        const group = product.requiredGroups && product.requiredGroups.find(g=>g.key===key);
+        const opt = group ? group.options.find(o=>o.id===optId) : null;
+        if(opt && opt.customizable){
+          const alreadySelected = draft[key+'ItemId']===optId;
+          push({
+            type:'group-item', productId: screen.productId, groupKey:key, itemId:optId,
+            parentDraft: draft,
+            draft: {
+              remove: alreadySelected ? [...(draft[key+'Remove']||[])] : [],
+              add: alreadySelected ? [...(draft[key+'Add']||[])] : [],
+              removeOpen:true, addOpen:true
+            }
+          });
+          return;
+        }
         animateSectionToggle(key, ()=>{
           if(key==='required') draft.requiredChoiceId = optId;
           else if(key==='side') draft.sideItemId = optId;
           else if(key==='drink') draft.drinkItemId = optId;
+          else if(key==='burger') draft.burgerItemId = optId;
           draft[key+'Open'] = false;
           render();
         });
+        // Non-customisable picks (Side/Drink) never leave this screen, so
+        // unlike the nested-page path above there's no pop() exit animation
+        // already providing motion — an instant jump here reads as a jump
+        // cut, snapping the view around while the group's own collapse is
+        // still mid-animation. A short delay lets that collapse register
+        // first, then a soft smooth-scroll (not an instant one) settles the
+        // just-answered group's anchor back at the top, with the next
+        // required group visible right underneath.
+        scrollToSectionSummary(key, 150, true);
         return;
       }
       case 'pick-size': {
@@ -2794,11 +3167,44 @@
         });
         return;
       }
+      case 'open-group-item-view': {
+        // Tapping a required-pick group's collapsed summary (the thumbnail
+        // or name, not the radio): a mandatory customisation is never
+        // "deselected" this way — for an option with its own nested
+        // customisation (Combo Satisfyer's Burger picks) this opens that
+        // nested page directly in edit mode, prefilled with whatever was
+        // already chosen, same as tapping a customizable item's collapsed
+        // summary inside a Burger King combo section. For a plain option
+        // with nothing to edit (Side/Drink), there's no edit page to go
+        // to, so it just reopens the picker instead — the only way to
+        // change a non-customizable required pick.
+        const key = el.getAttribute('data-group');
+        const optId = el.getAttribute('data-opt');
+        const draft = screen.draft;
+        const product = PRODUCTS[screen.productId];
+        const group = product.requiredGroups && product.requiredGroups.find(g=>g.key===key);
+        const opt = group ? group.options.find(o=>o.id===optId) : null;
+        if(opt && opt.customizable){
+          push({
+            type:'group-item', productId: screen.productId, groupKey:key, itemId:optId,
+            parentDraft: draft,
+            draft: {
+              remove: [...(draft[key+'Remove']||[])],
+              add: [...(draft[key+'Add']||[])],
+              removeOpen:true, addOpen:true
+            }
+          });
+        } else {
+          animateSectionToggle(key, ()=>{ draft[key+'Open'] = true; render(); });
+        }
+        return;
+      }
       case 'toggle-product-remove': {
         const optId = el.getAttribute('data-opt');
         const draft = screen.draft;
         const idx = draft.remove.indexOf(optId);
         if(idx>-1) draft.remove.splice(idx,1); else draft.remove.push(optId);
+        draft.removeOpen = true;
         render();
         return;
       }
@@ -2807,7 +3213,67 @@
         const draft = screen.draft;
         const idx = draft.add.indexOf(optId);
         if(idx>-1) draft.add.splice(idx,1); else draft.add.push(optId);
+        draft.addOpen = true;
         render();
+        return;
+      }
+      case 'toggle-group-item-remove': {
+        const optId = el.getAttribute('data-opt');
+        const draft = screen.draft;
+        draft.quickId = null;
+        const idx = draft.remove.indexOf(optId);
+        if(idx>-1) draft.remove.splice(idx,1); else draft.remove.push(optId);
+        draft.removeOpen = true;
+        render();
+        return;
+      }
+      case 'toggle-group-item-add': {
+        const optId = el.getAttribute('data-opt');
+        const draft = screen.draft;
+        draft.quickId = null;
+        const idx = draft.add.indexOf(optId);
+        if(idx>-1) draft.add.splice(idx,1); else draft.add.push(optId);
+        draft.addOpen = true;
+        render();
+        return;
+      }
+      case 'group-quick-pick': {
+        // Same "pick once, stays picked" behaviour as the original combo
+        // item's quick-pick: tapping the same card again is a no-op, not a
+        // deselect — same convention as required picks not being
+        // deselectable. Applies the preset's remove/add wholesale, same as
+        // manually toggling each one individually would.
+        const qId = el.getAttribute('data-quick');
+        const product = PRODUCTS[screen.productId];
+        const group = product.requiredGroups.find(g=>g.key===screen.groupKey);
+        const item = group.options.find(o=>o.id===screen.itemId);
+        const q = item.quickOptions.find(x=>x.id===qId);
+        const draft = screen.draft;
+        if(draft.quickId!==qId){
+          draft.quickId=qId; draft.remove=[...q.remove]; draft.add=[...q.add];
+          render();
+        }
+        return;
+      }
+      case 'confirm-group-item': {
+        const groupKey = el.getAttribute('data-group');
+        const itemId = el.getAttribute('data-item');
+        const localDraft = screen.draft || {remove:[],add:[]};
+        const parentDraft = screen.parentDraft;
+        // Same pop-then-apply choreography as a combo's confirm-item: wait
+        // for this nested page to finish its exit animation before writing
+        // the pick onto the parent product screen and settling the scroll
+        // on its (now collapsed) summary. That settle is an instant jump,
+        // not an animated scroll — the page just finished sliding back in,
+        // so it should simply already be sitting at the right spot rather
+        // than gliding there on top of that. The one exception is the last
+        // required group: with nothing left below it to reveal, the scroll
+        // gets clamped short of the target's true "top" position, and
+        // landing on that clamp instantly reads as a mis-placed snap — so
+        // that one case gets a softer, smooth settle instead.
+        const groupList = (PRODUCTS[screen.productId].requiredGroups)||[];
+        const isLastGroup = groupList.length>0 && groupList[groupList.length-1].key===groupKey;
+        pop(()=>{ selectGroupItem(parentDraft, groupKey, itemId, localDraft.remove, localDraft.add, isLastGroup?250:0, isLastGroup); });
         return;
       }
       case 'confirm-product': {
