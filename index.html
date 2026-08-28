@@ -199,12 +199,56 @@
 
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;font-family:'Glovo Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--text-color-primary);background:transparent;}
-  .proto-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 10px 36px;background:#EDEDED;width:100%;min-height:100vh;box-sizing:border-box;}
+  /* position:relative + the panel pulled out via position:absolute below
+     means .proto-phone-col is the only element left in normal flow here —
+     so align-items/justify-content:center center it on the viewport
+     itself (both axes), not on the (phone + panel) pair. That's what
+     keeps the phone dead-center regardless of the panel's width, height,
+     or presence. */
+  .proto-wrap{position:relative;display:flex;align-items:center;justify-content:center;padding:24px 10px;background:#EDEDED;width:100%;min-height:100vh;box-sizing:border-box;}
+  .proto-phone-col{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;}
   .proto-controls{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text-color-secondary);}
   .proto-controls button{border:1px solid var(--border-color-primary);background:var(--background-color-primary);border-radius:var(--cornerRadius-full);padding:6px 14px;font-size:13px;cursor:pointer;color:var(--text-color-primary);font-family:inherit;}
   .proto-controls button:hover{background:var(--background-color-secondary);}
   .phone{width:390px;height:800px;background:#111;border-radius:46px;padding:12px;box-shadow:0 20px 45px rgba(0,0,0,.28);position:relative;flex-shrink:0;}
   .phone-screen{width:100%;height:100%;background:var(--background-color-primary);border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+  /* ---------------- examples panel (switch example products) ----------------
+     Part of the emulator chrome, not the prototype itself — sits to the
+     right of the phone, like a prototyping tool's own page list, so it's
+     never touched by render() and never competes with anything inside
+     the phone (close/back button, etc). Taken out of the flex flow (see
+     .proto-wrap above) so it can float at the right edge without ever
+     pushing the phone off-center — vertically centered the same way the
+     phone itself now is, so the two stay aligned. */
+  /* z-index matters here for a reason specific to the narrow-viewport
+     popover: it's the earlier sibling of .proto-phone-col in the DOM, and
+     neither has its own stacking context, so with z-index:auto the phone
+     (painted later) would sit on top of a position:fixed popover instead
+     of the other way around — tapping the hamburger would "work" (the
+     class toggles fine) but visually do nothing, sitting invisibly behind
+     the phone. An explicit z-index above everything inside the phone
+     (highest existing one there is 80, the toast) fixes that for both the
+     always-on panel and the popover it becomes below 900px. */
+  .proto-sidebar{position:absolute;top:50%;right:24px;transform:translateY(-50%);width:240px;background:var(--background-color-primary);border-radius:var(--cornerRadius-s);box-shadow:0 2px 10px rgba(0,0,0,.08);padding:16px;z-index:200;}
+  .proto-sidebar-title{font-size:13px;font-weight:var(--text-weight-bold);color:var(--text-color-secondary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+  .proto-sidebar-item{display:flex;align-items:center;gap:12px;padding:10px 0;cursor:pointer;border-top:1px solid var(--border-color-primary);}
+  .proto-sidebar-item:first-child{border-top:none;}
+  .proto-sidebar-item img{width:44px;height:44px;border-radius:var(--cornerRadius-xs);object-fit:cover;flex:0 0 auto;background:var(--background-color-secondary);}
+  .proto-sidebar-item.active .proto-sidebar-item-name{font-weight:var(--text-weight-bold);}
+  /* Below the breakpoint the panel no longer fits beside a centered phone
+     without overlapping it, so it collapses into a small hamburger button
+     right next to Reset instead — tapped open, it drops the same list down
+     as a small popover anchored under that button (positioned in JS, since
+     the button's own position shifts with the centered layout — see
+     openSidebarMenu). */
+  /* IDs here, not .proto-menu-btn, so these actually beat the more
+     specific ".proto-controls button" padding/sizing rule above. */
+  #sidebarToggleBtn{display:none;width:32px;height:32px;padding:0;align-items:center;justify-content:center;flex:0 0 auto;}
+  @media (max-width: 900px){
+    #protoSidebar{display:none;}
+    #protoSidebar.open{display:block;}
+    #sidebarToggleBtn{display:inline-flex;}
+  }
   /* Floats on top of the app content instead of reserving its own row, so a
      full-bleed hero image (every screen in this prototype opens on one) can
      run all the way up behind it, like a real device's status bar over a
@@ -377,6 +421,22 @@
   .pintxo-expander-header__trailing-accessory{display:flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 auto;transition:transform .32s cubic-bezier(.4,0,.2,1);}
   .pintxo-expander-header__trailing-accessory[data-open='true']{transform:rotate(180deg);}
   .pintxo-expander-content{display:flex;flex-direction:column;gap:var(--component-expander-content-bodyContent-gap-vertical);padding:0 var(--spacing-m) var(--spacing-xs);}
+  /* Required-pick group flagged by 'confirm-product' (Add tapped with this
+     group still unanswered) — see renderRequiredPickGroup's hasError. A
+     required-pick group lives inset inside .detail-body's own 16px
+     padding (see .pintxo-expander--inset above), so the tint needs to
+     bleed past that same 16px on each side to actually read as a full
+     card rather than a stripe that stops short of the real page edge —
+     cancel it with a negative margin, then add the same 16px back as our
+     own padding so the header/list-item content lands in exactly the same
+     spot it already sits in today. */
+  .pintxo-expander--section.has-error{
+    background:var(--background-color-critical);
+    margin-left:calc(var(--spacing-m) * -1);
+    margin-right:calc(var(--spacing-m) * -1);
+    padding:0 var(--spacing-m) var(--spacing-m);
+  }
+  .has-error .section-head-sub{color:var(--text-color-critical);}
 
   /* -- Banner (banner/Banner.module.scss) -- */
   .pintxo-banner{padding:var(--component-banner-padding-vertical) var(--component-banner-padding-horizontal);border-radius:var(--component-banner-cornerRadius);display:flex;flex-direction:row;gap:var(--component-banner-gap-horizontal);align-items:center;justify-content:center;width:100%;box-sizing:border-box;transition:background .3s ease,color .3s ease,opacity .3s ease,max-height .3s ease,padding .3s ease,margin .3s ease;max-height:60px;overflow:hidden;cursor:pointer;}
@@ -613,25 +673,42 @@
 <body>
 
 <div class="proto-wrap">
-  <div class="proto-controls">
-    <button id="resetBtn">↺ Reset prototype</button>
+  <!-- Examples panel: lives in the emulator chrome, outside the phone
+       itself (like a prototyping tool's own page list), not as an
+       in-app drawer. Static shell markup, wired up once at the bottom
+       of the script, same pattern as #resetBtn. -->
+  <div class="proto-sidebar" id="protoSidebar">
+    <div class="proto-sidebar-title">Examples</div>
+    <div class="proto-sidebar-list" id="drawerList"><!-- populated by JS from EXAMPLE_PRODUCTS --></div>
   </div>
 
-  <div class="phone">
-    <div class="phone-screen">
-      <div class="status-bar">
-        <span id="clock">9:41</span>
-        <div class="status-icons">
-          <svg width="18" height="11" viewBox="0 0 18 11"><g fill="#161617"><rect x="0" y="7" width="3" height="4"/><rect x="4.5" y="5" width="3" height="6"/><rect x="9" y="3" width="3" height="8"/><rect x="13.5" y="0" width="3" height="11"/></g></svg>
-          <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.2c-.4 0-.7-.15-1-.42L4.6 8.4a5 5 0 0 1 6.8 0L9 10.78c-.28.27-.6.42-1 .42Zm-4.9-4.5-1.7-1.7A9.9 9.9 0 0 1 8 2.3a9.9 9.9 0 0 1 6.6 2.7l-1.7 1.7A7.4 7.4 0 0 0 8 4.8a7.4 7.4 0 0 0-4.9 1.9Z" fill="#161617"/></svg>
-          <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#161617"/><rect x="2" y="2" width="18" height="8" rx="1.2" fill="#161617"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#161617"/></svg>
-        </div>
-      </div>
+  <div class="proto-phone-col">
+    <div class="proto-controls">
+      <button id="resetBtn">↺ Reset prototype</button>
+      <!-- Narrow-viewport stand-in for the panel above: hidden by default
+           (see .proto-menu-btn), only shown once the panel itself no
+           longer fits beside the phone (see the max-width media query). -->
+      <button id="sidebarToggleBtn" class="proto-menu-btn" aria-label="Switch example product">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H20M4 12H20M4 18H20" stroke="#161617" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
 
-      <div class="app-view" id="appView">
-        <!-- Screens injected by JS -->
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="status-bar">
+          <span id="clock">9:41</span>
+          <div class="status-icons">
+            <svg width="18" height="11" viewBox="0 0 18 11"><g fill="#161617"><rect x="0" y="7" width="3" height="4"/><rect x="4.5" y="5" width="3" height="6"/><rect x="9" y="3" width="3" height="8"/><rect x="13.5" y="0" width="3" height="11"/></g></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.2c-.4 0-.7-.15-1-.42L4.6 8.4a5 5 0 0 1 6.8 0L9 10.78c-.28.27-.6.42-1 .42Zm-4.9-4.5-1.7-1.7A9.9 9.9 0 0 1 8 2.3a9.9 9.9 0 0 1 6.6 2.7l-1.7 1.7A7.4 7.4 0 0 0 8 4.8a7.4 7.4 0 0 0-4.9 1.9Z" fill="#161617"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#161617"/><rect x="2" y="2" width="18" height="8" rx="1.2" fill="#161617"/><rect x="22.5" y="4" width="2" height="4" rx="1" fill="#161617"/></svg>
+          </div>
+        </div>
+
+        <div class="app-view" id="appView">
+          <!-- Screens injected by JS -->
+        </div>
+        <div class="pintxo-snackbar" id="toast"><div class="pintxo-snackbar__box" data-style="neutral"><span class="pintxo-snackbar__box__label pintxo-typography-body2"></span></div></div>
       </div>
-      <div class="pintxo-snackbar" id="toast"><div class="pintxo-snackbar__box" data-style="neutral"><span class="pintxo-snackbar__box__label pintxo-typography-body2"></span></div></div>
     </div>
   </div>
 </div>
@@ -753,6 +830,45 @@
   const VICIO_QUICK_OPTIONS = [
     { id:'q1', label:'Your usual', desc:'No Sauce, Extra Cheese', remove:['nosalsa-v'], add:['extraqueso-v'] },
     { id:'q2', label:'Ordered 1000+ times', desc:'Extra Bacon, Extra Beef Patty', remove:[], add:['extrabacon-v','extracarne-v'] }
+  ];
+  // Same idea again, this time for the second example product (Aloha's
+  // Menú Poke Mediano) — shared across every poke recipe's own nested
+  // customisation. Real ingredient names pulled from Aloha's own Glovo
+  // menu, same as VICIO's.
+  const ALOHA_DEFAULT_REMOVE = [{id:'no-aguacate',label:'No Aguacate'},{id:'no-edamame',label:'No Edamame'},{id:'no-cebolla-crunchy',label:'No Cebolla Crunchy'}];
+  const ALOHA_DEFAULT_ADD = [{id:'extra-salmon',label:'Extra Salmón',price:2.00},{id:'extra-aguacate',label:'Extra Aguacate',price:1.00},{id:'extra-edamame',label:'Extra Edamame',price:1.00}];
+  const ALOHA_QUICK_OPTIONS = [
+    { id:'q1', label:'Sin picante', desc:'No Cebolla Crunchy, Extra Aguacate', remove:['no-cebolla-crunchy'], add:['extra-aguacate'] },
+    { id:'q2', label:'Extra protein', desc:'Extra Salmón, Extra Edamame', remove:[], add:['extra-salmon','extra-edamame'] }
+  ];
+  // Third example (McDonald's Pack Familiar) — shared across BOTH of its
+  // burger slots (see 'burger1'/'burger2' below), same shared-constant
+  // pattern as VICIO/Aloha above.
+  const MCD_DEFAULT_REMOVE = [{id:'no-pepinillo-mcd',label:'No Pickle'},{id:'no-cebolla-mcd',label:'No Onion'},{id:'no-queso-mcd',label:'No Cheese'}];
+  const MCD_DEFAULT_ADD = [{id:'extra-queso-mcd',label:'Extra Cheese',price:1.00},{id:'extra-bacon-mcd',label:'Extra Bacon',price:1.50},{id:'extra-carne-mcd',label:'Extra Beef Patty',price:2.00}];
+  const MCD_QUICK_OPTIONS = [
+    { id:'q1', label:'Your usual', desc:'No Onion, Extra Cheese', remove:['no-cebolla-mcd'], add:['extra-queso-mcd'] },
+    { id:'q2', label:'Most popular', desc:'Extra Bacon, Extra Cheese', remove:[], add:['extra-bacon-mcd','extra-queso-mcd'] }
+  ];
+  // Every Happy Meal main is itself a mini required-pick group one level
+  // deeper (see renderSimpleRequiredGroup / item.subGroups): a dessert and
+  // a toy-or-book choice, both required. Real McDonald's/Glovo options at
+  // this depth are plain text rows (no photos), matching the reference
+  // screenshot exactly. Shared by reference across all 5 Happy Meal
+  // options below — safe, since each option gets its own group-item
+  // screen/draft instance, so there's no cross-talk between them.
+  const HAPPY_MEAL_SUBGROUPS = [
+    { key:'postre', title:'Postre', chooseText:'Choose 1 item', options:[
+      { id:'melon-hm', label:'Melón' },
+      { id:'danonino-hm', label:'Danonino Street' },
+      { id:'manzana-hm', label:'Manzana' },
+      { id:'cherritos-hm', label:'Cherritos' },
+      { id:'mcflurry-kitkat-hm', label:'Mini McFlurry® KitKat', price:0.01 }
+    ] },
+    { key:'toylibro', title:'Juguete o libro, indica tu preferencia', chooseText:'Choose 1 item', options:[
+      { id:'juguete-hm', label:'Juguete' },
+      { id:'libro-hm', label:'Libro' }
+    ] }
   ];
 
   const BURGER_ITEMS = [
@@ -1092,8 +1208,214 @@
             price:1.00 }
         ] }
       ]
+    },
+    // Second example product — Aloha's "Menú Poke Mediano". Aloha's combo
+    // bundles a build-your-own poke with a drink and a dessert; only the
+    // poke itself is actually customizable (remove/add ingredients), so
+    // Drink and Postre are modelled as plain single-choice groups exactly
+    // like Side/Drink on Combo Satisfyer. All data below (names, images,
+    // descriptions, prices) is real content from Aloha's own Glovo menu;
+    // per-option upcharges mirror the real price gaps between items on
+    // that menu (e.g. every Poke priced 11,95€ vs. the 10,95€ Bubba 2.0
+    // carries a +1,00€ upcharge here).
+    'aloha-poke-menu': {
+      id:'aloha-poke-menu', name:'Menú Poke Mediano',
+      img:'https://glovo.dhmedia.io/image/menus-glovo/products/910efad43ec361db694b549a6243610ac599ed5db5c4f7e06ded4c43e74dcc1c?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+      desc:'Crea un poke a tu gusto + tu bebida y añadele postre.',
+      price:15.00,
+      customizable:true,
+      requiredGroups:[
+        { key:'poke', title:'Poke', chooseText:'Choose 1 item', options:[
+          { id:'uh-mami-poke', label:'Uh! Mami! Poke', img:'https://glovo.dhmedia.io/image/menus-glovo/products/3440e5350fd91af750a729efd65cf1ccf71802ba5a8fa4a9a54f957eb70aed69?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Atún, salmón, soja, aguacate, edamame, mango, cebollino, crunchy wakame y salsa aloha mayo.',
+            price:1.00,
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS },
+          { id:'chicken-run-poke', label:'(No) Chicken Run Poke', img:'https://glovo.dhmedia.io/image/menus-glovo/products/62c231c3aa572dcdaeedfe6e6338338184381662a17ad8bc99abad93f9c085a0?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Pollo vegano, aguacate, soja, edamame, zanahoria, tomate cherry, cebollino, semillas de sésamo y salsa avocado love.',
+            tag:'Vegan',
+            price:1.00,
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS },
+          { id:'super-ninja-poke', label:'Super Ninja', img:'https://glovo.dhmedia.io/image/menus-glovo/products/6c0720a1a4c98370885f33b84182967a45978828d9bc2dcbdd07443c456ac8f1?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Salmón, aguacate, soja, mango, alga wakame, edamame y semillas de sésamo + salsa spicy mayo.',
+            price:1.00,
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS },
+          { id:'teriyaky-chicken-poke', label:'Teriyaky Chicken', img:'https://glovo.dhmedia.io/image/menus-glovo/products/4a547f96f63931df6c50eb14d92cff35a6513d429bf8875158c9357648d90d03?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Pollo, salsa teriyaki, aguacate, edamame, piña, tomate cherry, cebolla caramelizada, cacahuetes, semillas de sésamo.',
+            price:1.00,
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS },
+          { id:'salmon-club-poke', label:'Salmon Club', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b6210d4c000b9381a13e059dac3ace8ef1ae7120d1dfa460fd3ec6a4a7447c42?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Salmón flambeado, soja, alga wakame, edamame, mango, pepino, queso crema, cebolla caramelizada, semillas de sésamo + salsa mayo trufada.',
+            price:1.00,
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS },
+          { id:'bubba-2-poke', label:'Bubba 2.0', img:'https://glovo.dhmedia.io/image/menus-glovo/products/06bf4f1b0898928f5bcff81d1db0a916d76eef79b3ce0aeec44c3567273f7d75?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Langostinos, aguacate, soja, mango, queso crema, zanahoria, cebolla crunchy, semillas de sésamo + salsa mayo spicy.',
+            customizable:true, removeOptions:ALOHA_DEFAULT_REMOVE, addOptions:ALOHA_DEFAULT_ADD, quickOptions:ALOHA_QUICK_OPTIONS }
+        ] },
+        { key:'drink', title:'Drink', chooseText:'Choose 1 item', options:[
+          { id:'agua-aloha', label:'Agua', img:'https://glovo.dhmedia.io/image/menus-glovo/products/096e0f1bfc5cf3cec85aa48dce11aa13f061fb3c1f48643efb160e8e64484fd8?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==' },
+          { id:'coca-cola-aloha', label:'Coca-Cola', img:'https://glovo.dhmedia.io/image/menus-glovo/products/edd01d05f392ab03023b7e8f0af2ac43af62b07268e939ef8ca5c7e40eb11d17?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:0.50 },
+          { id:'coca-cola-zero-aloha', label:'Coca-Cola Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/5aa19f2c0c282cb2306e487d286b4135a1e7d04f5298df999f38270e561bbc9c?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:0.50 },
+          { id:'fanta-naranja-zero-aloha', label:'Fanta Naranja Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/d52d6aac2a139d3d17f346e1792dc75cbf723cea0e6fa51fbbfa2b825dcd5753?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:0.50 },
+          { id:'agua-con-gas-aloha', label:'Agua con gas', img:'https://glovo.dhmedia.io/image/menus-glovo/products/7a9162c61dc212edc971b3fd58b8012a1a90fbd39547e2f05ec2d3df2c7cce08?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:0.50 },
+          { id:'mahou-aloha', label:'1/4 Mahou', img:'https://glovo.dhmedia.io/image/menus-glovo/products/39eb462b806778512f61293b6c2bf58020c018c990cbba073e61357964cfe963?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 }
+        ] },
+        { key:'postre', title:'Postre', chooseText:'Choose 1 item', options:[
+          { id:'cookie-chocolate-aloha', label:'Cookie Chocolate', img:'https://glovo.dhmedia.io/image/menus-glovo/products/71ece09b7bf98d715594421cab68eaac32d6654c14fb96469d662ff36987880c?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Cookie triple chocolate.' },
+          { id:'yogur-aloha', label:'Yogur', img:'https://glovo.dhmedia.io/image/menus-glovo/products/fb585b54acd84573dcea987a85e9086413bbbac813f0a9847705b1a6fc0aad63?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Yogur natural, granola y frutos rojos.',
+            price:0.50 },
+          { id:'brownie-aloha', label:'Brownie', img:'https://glovo.dhmedia.io/image/menus-glovo/products/e5e415126d9bef7cba4fa4f64389c11b7cdef18685858db943cee66ed90c262b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:2.00 },
+          { id:'tarta-queso-aloha', label:'Tarta de queso', img:'https://glovo.dhmedia.io/image/menus-glovo/products/c303a014bf35140b2dd53d05c06629503a9d7d71a56359c95021ef0f9cb07475?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Cheesecake.',
+            price:2.00 },
+          { id:'tarta-oreo-aloha', label:'Tarta de Oreo', img:'https://glovo.dhmedia.io/image/menus-glovo/products/36bca4d84030d59d0fb59f212a5419c1511d6f96dd19efece931878b0684c7e4?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:2.00 }
+        ] }
+      ]
+    },
+    // Third example — McDonald's "Pack Familiar". The real pack is
+    // genuinely nested (2 McMenús, each itself a burger+fries+drink
+    // bundle, plus 9 McNuggets plus a whole separate Happy Meal), which is
+    // a level deeper than this app's single-level requiredGroups can
+    // represent — there's no "a required-group option is itself another
+    // required-group choice" mechanism. So instead of nesting, this stays
+    // flat but wider: two independent, identically-stocked Burger slots
+    // (proving the existing key-based system — draft[key+'ItemId'],
+    // draft[key+'Remove'], etc. — already supports more than one
+    // customizable group side by side, no code changes needed) plus a
+    // sauce pick for the nuggets, the shared fries/drink, and the Happy
+    // Meal's own main as one more plain single-choice, same as Side/Drink
+    // always have been. Only the two Burger slots get remove/add — sauce,
+    // side, drink and the Happy Meal main are all flat picks with nothing
+    // further to customise, exactly like Combo Satisfyer's Side/Drink and
+    // Aloha's Drink/Postre.
+    'mcdonalds-pack-familiar': {
+      id:'mcdonalds-pack-familiar', name:'Pack Familiar',
+      img:'https://glovo.dhmedia.io/image/menus-glovo/products/530092ede2cefcbd276add1e57ed7c63e2d2fe70edc79a9735417af4500c5f4f?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+      desc:'2 McMenú® medianos + 9 McNuggets® + 1 Happy Meal.',
+      price:26.79,
+      customizable:true,
+      requiredGroups:[
+        { key:'burger1', title:'Burger 1', chooseText:'Choose 1 item', options:[
+          { id:'cheeseburger-mcd', label:'Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/c95abccd582dc7d6ea28282c4c8acdab16d7307d3d3b0e19c8f016e3975994fb?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Con kétchup, mostaza, cebolla, pepinillo y queso Cheddar fundido.',
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'chicken-mayo-mcd', label:'Chicken Mayo', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b6bf51db7060f3d7868b361756bd1998bdacbed1ea86b1feb7f0c7dce826eb54?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Pollo crujiente con salsa mayo y lechuga.',
+            price:1.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'doble-cheeseburger-mcd', label:'Doble Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/e2f02410fdd78e221359214f73e0218aad7837b374cf3c84a0691b4d971fe7d1?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Cheeseburger con doble de carne, con kétchup, mostaza, cebolla, pepinillo y queso Cheddar fundido.',
+            price:3.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'cuarto-libra-queso-mcd', label:'Cuarto de Libra con Queso', img:'https://glovo.dhmedia.io/image/menus-glovo/products/038089bbd853198d16a82aacda1428e4f1b7fe365bf969483de00a2556589d83?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Queso fundido, carne, cebolla y pepinillos.',
+            price:4.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'mcpollo-mcd', label:'McPollo®', img:'https://glovo.dhmedia.io/image/menus-glovo/products/72b932517d7b037071afd80966c2e08826a6c303db315ce7ab1906f0eaa6f274?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Crujiente pollo, mayonesa y lechuga.',
+            price:4.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'big-mac-mcd', label:'Big Mac®', img:'https://glovo.dhmedia.io/image/menus-glovo/products/c7d22b3dbf3df07a6cc3918715365067699956da59588b26d9920d4144cc90d3?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Carne, pepinillos, lechuga, cebolla y queso fundido.',
+            price:5.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS }
+        ] },
+        { key:'burger2', title:'Burger 2', chooseText:'Choose 1 item', options:[
+          { id:'cheeseburger-mcd-2', label:'Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/c95abccd582dc7d6ea28282c4c8acdab16d7307d3d3b0e19c8f016e3975994fb?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Con kétchup, mostaza, cebolla, pepinillo y queso Cheddar fundido.',
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'chicken-mayo-mcd-2', label:'Chicken Mayo', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b6bf51db7060f3d7868b361756bd1998bdacbed1ea86b1feb7f0c7dce826eb54?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Pollo crujiente con salsa mayo y lechuga.',
+            price:1.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'doble-cheeseburger-mcd-2', label:'Doble Cheeseburger', img:'https://glovo.dhmedia.io/image/menus-glovo/products/e2f02410fdd78e221359214f73e0218aad7837b374cf3c84a0691b4d971fe7d1?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Cheeseburger con doble de carne, con kétchup, mostaza, cebolla, pepinillo y queso Cheddar fundido.',
+            price:3.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'cuarto-libra-queso-mcd-2', label:'Cuarto de Libra con Queso', img:'https://glovo.dhmedia.io/image/menus-glovo/products/038089bbd853198d16a82aacda1428e4f1b7fe365bf969483de00a2556589d83?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Queso fundido, carne, cebolla y pepinillos.',
+            price:4.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'mcpollo-mcd-2', label:'McPollo®', img:'https://glovo.dhmedia.io/image/menus-glovo/products/72b932517d7b037071afd80966c2e08826a6c303db315ce7ab1906f0eaa6f274?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Crujiente pollo, mayonesa y lechuga.',
+            price:4.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS },
+          { id:'big-mac-mcd-2', label:'Big Mac®', img:'https://glovo.dhmedia.io/image/menus-glovo/products/c7d22b3dbf3df07a6cc3918715365067699956da59588b26d9920d4144cc90d3?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Carne, pepinillos, lechuga, cebolla y queso fundido.',
+            price:5.00,
+            customizable:true, removeOptions:MCD_DEFAULT_REMOVE, addOptions:MCD_DEFAULT_ADD, quickOptions:MCD_QUICK_OPTIONS }
+        ] },
+        { key:'side1', title:'Side 1', chooseText:'Choose 1 item', options:[
+          { id:'patatas-fritas-mcd', label:'Patatas Fritas', img:'https://glovo.dhmedia.io/image/menus-glovo/products/9a69ae0db620a42adb066161cead51553c19c9f8922f364fb7509211218af76f?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosas patatas fritas con aceite vegetal.' },
+          { id:'patatas-deluxe-mcd', label:'Patatas Deluxe', img:'https://glovo.dhmedia.io/image/menus-glovo/products/01aa2db578243067361127fc9efcafe493345f0588f365300dfab1b12e61e2f5?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosos gajos de patatas especiadas.' },
+          { id:'patatas-fritas-grandes-mcd', label:'Patatas Fritas Grandes', img:'https://glovo.dhmedia.io/image/menus-glovo/products/f447eb7d22924d7cf073ca16e5cea0aa60381a989300f9abb8c5e10c2f429f6a?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosas patatas fritas con aceite vegetal, en tamaño grande.',
+            price:0.50 }
+        ] },
+        { key:'side2', title:'Side 2', chooseText:'Choose 1 item', options:[
+          { id:'patatas-fritas-mcd-2', label:'Patatas Fritas', img:'https://glovo.dhmedia.io/image/menus-glovo/products/9a69ae0db620a42adb066161cead51553c19c9f8922f364fb7509211218af76f?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosas patatas fritas con aceite vegetal.' },
+          { id:'patatas-deluxe-mcd-2', label:'Patatas Deluxe', img:'https://glovo.dhmedia.io/image/menus-glovo/products/01aa2db578243067361127fc9efcafe493345f0588f365300dfab1b12e61e2f5?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosos gajos de patatas especiadas.' },
+          { id:'patatas-fritas-grandes-mcd-2', label:'Patatas Fritas Grandes', img:'https://glovo.dhmedia.io/image/menus-glovo/products/f447eb7d22924d7cf073ca16e5cea0aa60381a989300f9abb8c5e10c2f429f6a?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabrosas patatas fritas con aceite vegetal, en tamaño grande.',
+            price:0.50 }
+        ] },
+        { key:'drink1', title:'Drink 1', chooseText:'Choose 1 item', options:[
+          { id:'agua-mcd', label:'Agua', img:'https://glovo.dhmedia.io/image/menus-glovo/products/14c6e9b8a2c6328771cf1d1ac13c78acaefe7626d0b93947eed6e07d9ef84a4b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Agua de mineralización débil y sabor suave. 50cl.' },
+          { id:'coca-cola-mcd', label:'Coca Cola', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b9f25414557d2ae6ee4d8194ff9323ea8454b9f217eca0de7dbbb71134a52fea?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 },
+          { id:'fanta-naranja-mcd', label:'Fanta Naranja Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/a82137f868a23283e03956015de8a80728003343439c8f6d48521f87545d896b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 },
+          { id:'sprite-mcd', label:'Sprite Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/793bd2bfcca09d9ae6d2d4cd0c5229c896d0796b05de29d6860bcb95bcdf62e7?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 }
+        ] },
+        { key:'drink2', title:'Drink 2', chooseText:'Choose 1 item', options:[
+          { id:'agua-mcd-2', label:'Agua', img:'https://glovo.dhmedia.io/image/menus-glovo/products/14c6e9b8a2c6328771cf1d1ac13c78acaefe7626d0b93947eed6e07d9ef84a4b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Agua de mineralización débil y sabor suave. 50cl.' },
+          { id:'coca-cola-mcd-2', label:'Coca Cola', img:'https://glovo.dhmedia.io/image/menus-glovo/products/b9f25414557d2ae6ee4d8194ff9323ea8454b9f217eca0de7dbbb71134a52fea?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 },
+          { id:'fanta-naranja-mcd-2', label:'Fanta Naranja Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/a82137f868a23283e03956015de8a80728003343439c8f6d48521f87545d896b?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 },
+          { id:'sprite-mcd-2', label:'Sprite Zero', img:'https://glovo.dhmedia.io/image/menus-glovo/products/793bd2bfcca09d9ae6d2d4cd0c5229c896d0796b05de29d6860bcb95bcdf62e7?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            price:1.00 }
+        ] },
+        { key:'happymeal', title:'Happy Meal', chooseText:'Choose 1 item', options:[
+          { id:'hamburguesa-mcd', label:'Hamburguesa', img:'https://glovo.dhmedia.io/image/menus-glovo/products/192fd5be96193df812c57cd423ff97f4089a07d7aab0625c76fa45b5d4534759?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Carne, cebolla y pepinillos.', customizable:true, subGroups: HAPPY_MEAL_SUBGROUPS },
+          { id:'hamburguesa-queso-mcd', label:'Hamburguesa con Queso', img:'https://glovo.dhmedia.io/image/menus-glovo/products/52075e3f7074b65f03b7829a359e88632f9cf6c1c862da69726329dabfac09dd?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Carne, cebolla, pepinillos y queso fundido.', customizable:true, subGroups: HAPPY_MEAL_SUBGROUPS },
+          { id:'mcnuggets-4-mcd', label:'4 McNuggets®', img:'https://glovo.dhmedia.io/image/menus-glovo/products/4d452f4f629961ad363a3d8113e7a0ac04085f9141efdaf86f72a3fd0cc63890?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Deliciosos bocaditos de pollo rebozado.', customizable:true, subGroups: HAPPY_MEAL_SUBGROUPS },
+          { id:'chicken-burger-kids-mcd', label:'Chicken Burger Kids', img:'https://glovo.dhmedia.io/image/menus-glovo/products/0f15e31c9d2b1b54af119710c55f21e554ecc83b15c861585e344e3f6e5ac843?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Delicioso pollo crujiente y kétchup.', customizable:true, subGroups: HAPPY_MEAL_SUBGROUPS },
+          { id:'mcfish-kids-mcd', label:'McFish', img:'https://glovo.dhmedia.io/image/menus-glovo/products/07998e72679055ffc18baa8302c12cea119876098c90c97837be75a069494c5c?t=W3sicmVzaXplIjp7Im1vZGUiOiJmaXQiLCJ3aWR0aCI6MzIwLCJoZWlnaHQiOjMyMH19XQ==',
+            desc:'Sabroso pescado acompañado de kétchup.', customizable:true, subGroups: HAPPY_MEAL_SUBGROUPS }
+        ] }
+      ]
     }
   };
+
+  // Drives the examples panel (emulator chrome, left of the phone) that
+  // lets the prototype jump between its example products — each entry's
+  // own PRODUCTS.img is reused so the panel never needs its own separate
+  // thumbnails to keep in sync.
+  const EXAMPLE_PRODUCTS = [
+    { id:'combo-satisfyer', label: PRODUCTS['combo-satisfyer'].name, img: PRODUCTS['combo-satisfyer'].img },
+    { id:'aloha-poke-menu', label: PRODUCTS['aloha-poke-menu'].name, img: PRODUCTS['aloha-poke-menu'].img },
+    { id:'mcdonalds-pack-familiar', label: PRODUCTS['mcdonalds-pack-familiar'].name, img: PRODUCTS['mcdonalds-pack-familiar'].img }
+  ];
 
   /* ---------------- tab content (every id maps to a real PRODUCTS entry) ---------------- */
   const TABS = ['promotions','topsellers','combos','parrilla','new'];
@@ -1131,9 +1453,9 @@
   let cartIdCounter = 1;
   let productCartIdCounter = 1;
 
-  function freshState(){
+  function freshState(productId){
     return {
-      stack: [{type:'product', productId:'combo-satisfyer'}],
+      stack: [{type:'product', productId: productId || 'combo-satisfyer'}],
       activeTab: 'promotions',
       qty: 1,
       cartItems: [], // [{ id, comboId, qty, sections }]
@@ -1356,9 +1678,15 @@
     if(after && fromHeight!=null && typeof after.animate==='function'){
       const toHeight = after.getBoundingClientRect().height;
       if(Math.abs(toHeight-fromHeight)>1){
+        // "Response" transition spec: 240ms, Ease cubic-bezier(.4,.14,.3,1).
+        // A second, separate opacity animate() used to run alongside this
+        // one to soften the content swap, but two independent WAAPI
+        // animations on the same element compete for paint and read as a
+        // flicker rather than a soft fade — so it's gone, just the one
+        // height tween now.
         after.animate(
           [{height:fromHeight+'px', overflow:'hidden'}, {height:toHeight+'px', overflow:'hidden'}],
-          {duration:320, easing:'cubic-bezier(.4,0,.2,1)'}
+          {duration:240, easing:'cubic-bezier(.4,.14,.3,1)'}
         );
       }
     }
@@ -1553,8 +1881,18 @@
     size = size || 'm';
     return '<button class="pintxo-icon-button'+(className?' '+className:'')+'" data-size="'+size+'" data-variant="'+(variant||'neutral')+'" '+(action||'')+' '+(attrs||'')+'>'+icon+'</button>';
   }
-  function pintxoTag(label, style, variant){
-    return '<span class="pintxo-tag pintxo-typography-caption-emphasis" data-style="'+style+'" data-variant="'+variant+'">'+label+'</span>';
+  function pintxoTag(label, style, variant, icon){
+    return '<span class="pintxo-tag pintxo-typography-caption-emphasis" data-style="'+style+'" data-variant="'+variant+'">'+(icon||'')+label+'</span>';
+  }
+  // Warning-triangle glyph for the "Required" tag's error state only —
+  // kept as an explicit opt-in icon param (rather than auto-attaching to
+  // every critical-style tag) since discount badges ("-30%", "2 for 1")
+  // also use the critical style and shouldn't get a warning icon. Its own
+  // function, distinct from warningTriangleIcon() (the dark-on-light one
+  // built for the checkout banner) — this one uses currentColor so it
+  // always matches the tag's own white text against the solid red pill.
+  function requiredTagIcon(){
+    return '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
   }
   function pintxoRadio(checked, attrs){
     return '<input type="radio" class="pintxo-radio-button__input" data-checked="'+checked+'" readonly '+(attrs||'')+'>';
@@ -1939,7 +2277,21 @@
   // option's thumbnail open the gallery with its own title+description,
   // same as tapping a nested item's thumbnail inside a combo section.
   function renderRequiredPickGroup(key, title, chooseText, options, selectedId, isOpen, isFirst, galleryCtx, customRowFn){
+    // No-cost options always sort ahead of any option carrying an upcharge
+    // — a stable sort so ties (same free/paid status) keep their original
+    // relative order from the product data.
+    options = options.slice().sort((a,b)=>{
+      const aPaid = (a.price||0) > 0, bPaid = (b.price||0) > 0;
+      return aPaid===bPaid ? 0 : (aPaid ? 1 : -1);
+    });
     const hasChoice = !!selectedId;
+    // Set by 'confirm-product' when Add is tapped with this group still
+    // unanswered — same convention as the old combo section's own
+    // validationErrorSectionId check. Forces the picker open (there's
+    // nothing to show an error "on" if it's collapsed with no chosen item)
+    // and swaps the pill to its red/warning-icon state until answered.
+    const hasError = !hasChoice && state.validationErrorSectionId===key;
+    if(hasError) isOpen = true;
     const chosen = hasChoice ? options.find(o=>o.id===selectedId) : null;
     const galleryAction = (o)=> galleryCtx
       ? `data-action="open-gallery" data-source="size-item" data-product="${galleryCtx.productId}" data-size="${galleryCtx.sizeId}" data-group="${key}" data-item="${o.id}" data-info="true"`
@@ -2005,11 +2357,69 @@
         </div>`;
     }
     return `
-      <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
+      <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset${hasError ? ' has-error' : ''}" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
         <div class="pintxo-expander-header" data-action="toggle-group" data-group="${key}">
           <div class="pintxo-expander-header__left">
             <div class="section-head-title-row"><span class="section-head-title">${title}</span></div>
-            <div class="section-head-meta-row">${hasChoice ? pintxoTag('Complete','positive','primary') : pintxoTag('Required','contrast','primary')}<span class="section-head-sub">${chooseText}</span></div>
+            <div class="section-head-meta-row">${hasChoice ? pintxoTag('Complete','positive','primary') : (hasError ? pintxoTag('Required','critical','primary',requiredTagIcon()) : pintxoTag('Required','contrast','primary'))}<span class="section-head-sub">${chooseText}</span></div>
+          </div>
+          <span class="pintxo-expander-header__trailing-accessory" data-open="${isOpen}">${chevronDownIcon()}</span>
+        </div>
+        ${bodyHtml}
+      </div>`;
+  }
+
+  // A required single-choice pick that lives ONE level deeper than
+  // renderRequiredPickGroup — inside a group-item's own nested page (e.g.
+  // a Happy Meal option's "postre"/"juguete o libro" choices). Real
+  // McDonald's/Glovo customisations at this depth are plain text lists (no
+  // photo per option, nothing further to drill into), so this is a
+  // trimmed variant: whole row is one tap target (select directly, same
+  // convention as the Remove/Add ingredient checkbox rows) instead of the
+  // split image-tap-to-view / radio-tap-to-select zones a top-level
+  // required-pick group needs for its photo-led rows.
+  function renderSimpleRequiredGroup(key, title, chooseText, options, selectedId, isOpen, isFirst){
+    options = options.slice().sort((a,b)=>{
+      const aPaid = (a.price||0) > 0, bPaid = (b.price||0) > 0;
+      return aPaid===bPaid ? 0 : (aPaid ? 1 : -1);
+    });
+    const hasChoice = !!selectedId;
+    const hasError = !hasChoice && state.validationErrorSectionId===key;
+    if(hasError) isOpen = true;
+    const chosen = hasChoice ? options.find(o=>o.id===selectedId) : null;
+    let bodyHtml = '';
+    if(isOpen){
+      bodyHtml = `<div class="item-list">` + options.map(o=>`
+        <div class="pintxo-list-item" data-actionable="true" data-action="group-subpick" data-group="${key}" data-opt="${o.id}">
+          <div class="pintxo-list-item__body-content">
+            <span class="pintxo-list-item__body__title" style="flex-direction:column;">
+              <span class="pintxo-list-item__body__title__text pintxo-typography-body1">${o.label}</span>
+              ${o.price>0 ? `<span class="pintxo-typography-body2" style="color:var(--text-color-primary);">+ ${o.price.toFixed(2).replace('.',',')}€</span>` : ''}
+            </span>
+          </div>
+          <div class="pintxo-list-item__trailing-content" style="padding-left:8px;">${pintxoRadio(selectedId===o.id)}</div>
+        </div>`).join('') + `</div>`;
+    } else if(chosen){
+      // No photo, so no separate "view" page to send a tap to — the whole
+      // collapsed row just reopens the picker (same as tapping the
+      // header), unlike a top-level group's collapsed summary.
+      bodyHtml = `
+        <div class="selected-summary" style="padding:var(--component-listItem-padding-vertical-l) 0;">
+          <div class="summary-row" data-action="toggle-group" data-group="${key}">
+            <div class="summary-mid">
+              <div class="summary-name">${chosen.label}</div>
+              ${chosen.price>0 ? `<div class="summary-custom-price">+ ${chosen.price.toFixed(2).replace('.',',')}€</div>` : ''}
+            </div>
+            ${pintxoRadio(true, `data-action="toggle-group" data-group="${key}"`)}
+          </div>
+        </div>`;
+    }
+    return `
+      <div class="pintxo-expander pintxo-expander--section pintxo-expander--inset${hasError ? ' has-error' : ''}" data-section-anchor="${key}"${isFirst ? ' style="margin-top:var(--spacing-s);"' : ''}>
+        <div class="pintxo-expander-header" data-action="toggle-group" data-group="${key}">
+          <div class="pintxo-expander-header__left">
+            <div class="section-head-title-row"><span class="section-head-title">${title}</span></div>
+            <div class="section-head-meta-row">${hasChoice ? pintxoTag('Complete','positive','primary') : (hasError ? pintxoTag('Required','critical','primary',requiredTagIcon()) : pintxoTag('Required','contrast','primary'))}<span class="section-head-sub">${chooseText}</span></div>
           </div>
           <span class="pintxo-expander-header__trailing-accessory" data-open="${isOpen}">${chevronDownIcon()}</span>
         </div>
@@ -2184,16 +2594,21 @@
           <div class="quick-heading">Customise it quickly</div>
           <div class="quick-sub">You can still make changes after selecting an option</div>
           <div class="quick-row">
-            ${item.quickOptions.map(q=>{
+            ${item.quickOptions.map((q,qIdx)=>{
               const price = (q.add||[]).reduce((sum,id)=>{
                 const opt=(item.addOptions||[]).find(o=>o.id===id); return sum+(opt?opt.price:0);
               },0);
               const selected = draft.quickId===q.id;
+              // The first quick-pick card is always framed as "what you
+              // actually ordered last time" rather than whatever label the
+              // data happens to carry — same convention every quick-pick
+              // list follows (see the other quickHtml block below).
+              const label = qIdx===0 ? 'You ordered on Tuesday' : q.label;
               return `
               <div class="pintxo-selectable-card" data-state="${selected?'selected':'unselected'}" data-action="quick-pick" data-quick="${q.id}">
                 <div class="pintxo-selectable-card__container">
                   <div class="pintxo-selectable-card__container__top">
-                    <div class="quick-card-label">${q.label}</div>
+                    <div class="quick-card-label">${label}</div>
                     ${pintxoRadio(selected)}
                   </div>
                   <div class="quick-card-desc">${q.desc}</div>
@@ -2260,7 +2675,7 @@
   // cart entry (editingCartId).
   function freshProductDraft(product, entry){
     const sizeId = entry ? (entry.sizeId || 'solo') : 'solo';
-    return {
+    const draft = {
       remove: entry ? [...entry.remove] : [],
       add: entry ? [...entry.add] : [],
       requiredChoiceId: entry ? entry.requiredChoiceId : null,
@@ -2281,6 +2696,17 @@
       burgerItemId: entry ? (entry.burgerItemId || null) : null,
       burgerOpen: entry ? !entry.burgerItemId : true
     };
+    // Any product.requiredGroups key not already covered above (e.g.
+    // Aloha's 'poke'/'postre') gets the same <key>ItemId/<key>Open pair —
+    // every required section starts open and unanswered by default.
+    if(product.requiredGroups){
+      product.requiredGroups.forEach(g=>{
+        const idKey = g.key+'ItemId', openKey = g.key+'Open';
+        if(draft[idKey]===undefined) draft[idKey] = entry ? (entry[idKey] || null) : null;
+        if(draft[openKey]===undefined) draft[openKey] = entry ? !entry[idKey] : true;
+      });
+    }
+    return draft;
   }
 
   /* ---- Product screen (standalone menu product customisation page) ---- */
@@ -2298,6 +2724,13 @@
     if(draft.sideOpen===undefined) draft.sideOpen = !draft.sideItemId;
     if(draft.drinkOpen===undefined) draft.drinkOpen = !draft.drinkItemId;
     if(draft.burgerOpen===undefined) draft.burgerOpen = !draft.burgerItemId;
+    if(product.requiredGroups){
+      product.requiredGroups.forEach(g=>{
+        const idKey = g.key+'ItemId', openKey = g.key+'Open';
+        if(draft[idKey]===undefined) draft[idKey] = null;
+        if(draft[openKey]===undefined) draft[openKey] = !draft[idKey];
+      });
+    }
 
     const hasSizes = !!product.sizes;
     const hasGroups = !!product.requiredGroups;
@@ -2426,7 +2859,7 @@
           ${bannerHtml}
           <div class="footer-row">
             ${pintxoCounter(draft.qty, 'data-action="product-qty-decr"', 'data-action="product-qty-incr"')}
-            <div style="flex:1;">${pintxoButton({label:'Add · '+fmt(total), variant:'primary', size:'m', block:true})}</div>
+            <div style="flex:1;">${pintxoButton({label:'Add · '+fmt(total), variant:'primary', size:'m', block:true, action:'data-action="confirm-product"'})}</div>
           </div>
         </div>
       </div>`;
@@ -2482,6 +2915,16 @@
     if(draft.removeOpen===undefined) draft.removeOpen = true;
     if(draft.addOpen===undefined) draft.addOpen = true;
     if(draft.quickId===undefined) draft.quickId = null;
+    // Nested required picks living inside THIS item's own page (e.g. a
+    // Happy Meal's "postre"/"juguete o libro" choices) — same generic
+    // <key>ItemId/<key>Open lazy-init as a top-level product's
+    // requiredGroups, just scoped to this screen's own draft instead.
+    if(item.subGroups){
+      item.subGroups.forEach(g=>{
+        if(draft[g.key+'ItemId']===undefined) draft[g.key+'ItemId'] = null;
+        if(draft[g.key+'Open']===undefined) draft[g.key+'Open'] = !draft[g.key+'ItemId'];
+      });
+    }
 
     // "Customise it quickly" — same shortcut cards the original combo
     // items had, brought back as-is for the Burger's nested customisation.
@@ -2491,16 +2934,21 @@
         <div class="quick-heading">Customise it quickly</div>
         <div class="quick-sub">You can still make changes after selecting an option</div>
         <div class="quick-row">
-          ${item.quickOptions.map(q=>{
+          ${item.quickOptions.map((q,qIdx)=>{
             const price = (q.add||[]).reduce((sum,id)=>{
               const opt=(item.addOptions||[]).find(o=>o.id===id); return sum+(opt?opt.price:0);
             },0);
             const selected = draft.quickId===q.id;
+            // The first quick-pick card is always framed as "what you
+            // actually ordered last time" rather than whatever label the
+            // data happens to carry, regardless of which product/item
+            // it's showing quick picks for.
+            const label = qIdx===0 ? 'You ordered on Tuesday' : q.label;
             return `
             <div class="pintxo-selectable-card" data-state="${selected?'selected':'unselected'}" data-action="group-quick-pick" data-quick="${q.id}">
               <div class="pintxo-selectable-card__container">
                 <div class="pintxo-selectable-card__container__top">
-                  <div class="quick-card-label">${q.label}</div>
+                  <div class="quick-card-label">${label}</div>
                   ${pintxoRadio(selected)}
                 </div>
                 <div class="quick-card-desc">${q.desc}</div>
@@ -2536,6 +2984,17 @@
     if(item.removeOptions && item.removeOptions.length) ingHtml += renderOptionalGroup('remove', 'Remove ingredient', removeListHtml, draft.removeOpen, !quickHtml, removeSelected);
     if(item.addOptions && item.addOptions.length) ingHtml += renderOptionalGroup('add', 'Add extra ingredient', addListHtml, draft.addOpen, !quickHtml && !ingHtml, addSelected);
 
+    // A Happy Meal option's own nested required picks (postre, juguete o
+    // libro...) — real single-choice sub-customisations, not simple
+    // remove/add ingredients, so they get their own component rather than
+    // riding along in ingHtml above.
+    let subGroupsHtml = '';
+    if(item.subGroups && item.subGroups.length){
+      subGroupsHtml = item.subGroups.map((g,gi)=>
+        renderSimpleRequiredGroup(g.key, g.title, g.chooseText, g.options, draft[g.key+'ItemId'], draft[g.key+'Open'], gi===0 && !quickHtml && !ingHtml)
+      ).join('');
+    }
+
     // Always "Select" here — this page's job is finalising the chosen
     // item's customisation (remove/add), not the item choice itself (that
     // already happened by tapping into this page). The option's own
@@ -2564,6 +3023,7 @@
             <div class="detail-desc">${item.desc||''}</div>
             ${quickHtml}
             ${ingHtml}
+            ${subGroupsHtml}
           </div>
         </div>
         <div class="screen-footer">
@@ -2577,11 +3037,19 @@
   // Finalises a group-item nested customisation — same shape as selectItem,
   // just applied onto the parent product screen's draft (draft[key+'ItemId']
   // etc.) instead of a combo section's state.sections entry.
-  function selectGroupItem(parentDraft, groupKey, itemId, remove, add, scrollDelay, soft){
+  function selectGroupItem(parentDraft, groupKey, itemId, remove, add, scrollDelay, soft, subAnswers){
     parentDraft[groupKey+'ItemId'] = itemId;
     parentDraft[groupKey+'Remove'] = remove || [];
     parentDraft[groupKey+'Add'] = add || [];
     parentDraft[groupKey+'Open'] = false;
+    if(subAnswers){
+      // Persist a group-item's own nested required picks onto the parent
+      // draft, namespaced so they can't collide with the parent's own
+      // group keys (or another group's), and so they can be re-seeded if
+      // this option is reopened later (see 'view-group-item').
+      Object.keys(subAnswers).forEach(function(k){ parentDraft[groupKey+'__'+k] = subAnswers[k]; });
+    }
+    if(state.validationErrorSectionId===groupKey) state.validationErrorSectionId = null;
     render();
     if(scrollDelay !== undefined) scrollToSectionSummary(groupKey, scrollDelay, soft);
   }
@@ -3168,23 +3636,34 @@
         const opt = group ? group.options.find(o=>o.id===optId) : null;
         if(opt && opt.customizable){
           const alreadySelected = draft[key+'ItemId']===optId;
+          // Same nested-picks restore as view-group-item above — this
+          // branch reaches the same group-item screen via the radio
+          // instead of the image/title, so it needs the same seeding.
+          const subDraft = {};
+          if(opt.subGroups){
+            opt.subGroups.forEach(g=>{
+              subDraft[g.key+'ItemId'] = alreadySelected ? (draft[key+'__'+g.key+'ItemId'] || null) : null;
+            });
+          }
           push({
             type:'group-item', productId: screen.productId, groupKey:key, itemId:optId,
             parentDraft: draft,
-            draft: {
+            draft: Object.assign({
               remove: alreadySelected ? [...(draft[key+'Remove']||[])] : [],
               add: alreadySelected ? [...(draft[key+'Add']||[])] : [],
               removeOpen:true, addOpen:true
-            }
+            }, subDraft)
           });
           return;
         }
         animateSectionToggle(key, ()=>{
+          // 'required' is the one legacy group with its own field name
+          // (requiredChoiceId); every other group — Combo Satisfyer's or
+          // Aloha's or any future product's — just owns <key>ItemId.
           if(key==='required') draft.requiredChoiceId = optId;
-          else if(key==='side') draft.sideItemId = optId;
-          else if(key==='drink') draft.drinkItemId = optId;
-          else if(key==='burger') draft.burgerItemId = optId;
+          else draft[key+'ItemId'] = optId;
           draft[key+'Open'] = false;
+          if(state.validationErrorSectionId===key) state.validationErrorSectionId = null;
           render();
         });
         // Non-customisable picks (Side/Drink) never leave this screen, so
@@ -3211,6 +3690,24 @@
         scrollToSectionSummary(key, isLastGroup ? 350 : 150, true);
         return;
       }
+      case 'group-subpick': {
+        // required-group-pick's counterpart for a nested required pick
+        // living INSIDE a group-item's own page (see
+        // renderSimpleRequiredGroup) — e.g. a Happy Meal's "postre"/
+        // "juguete o libro" choices. Always a direct select-and-collapse:
+        // there's no further page these plain, photo-less options could
+        // push to.
+        const key = el.getAttribute('data-group');
+        const optId = el.getAttribute('data-opt');
+        const draft = screen.draft;
+        animateSectionToggle(key, ()=>{
+          draft[key+'ItemId'] = optId;
+          draft[key+'Open'] = false;
+          if(state.validationErrorSectionId===key) state.validationErrorSectionId = null;
+          render();
+        });
+        return;
+      }
       case 'view-group-item': {
         // The picture/title zone of a required-pick option's OPEN list row
         // (see renderRequiredPickGroup) — always opens that option's own
@@ -3231,14 +3728,24 @@
         const opt = group ? group.options.find(o=>o.id===optId) : null;
         if(!opt) return;
         const alreadySelected = draft[key+'ItemId']===optId;
+        // Reopening an already-answered option (e.g. an already-configured
+        // Happy Meal) restores its nested picks too — stored on the parent
+        // draft namespaced as <group>__<subKey>ItemId, same idea as
+        // <group>Remove/<group>Add above, just one level deeper.
+        const subDraft = {};
+        if(opt.subGroups){
+          opt.subGroups.forEach(g=>{
+            subDraft[g.key+'ItemId'] = alreadySelected ? (draft[key+'__'+g.key+'ItemId'] || null) : null;
+          });
+        }
         push({
           type:'group-item', productId: screen.productId, groupKey:key, itemId:optId,
           parentDraft: draft,
-          draft: {
+          draft: Object.assign({
             remove: alreadySelected ? [...(draft[key+'Remove']||[])] : [],
             add: alreadySelected ? [...(draft[key+'Add']||[])] : [],
             removeOpen:true, addOpen:true
-          }
+          }, subDraft)
         });
         return;
       }
@@ -3341,6 +3848,26 @@
         const itemId = el.getAttribute('data-item');
         const localDraft = screen.draft || {remove:[],add:[]};
         const parentDraft = screen.parentDraft;
+        const product = PRODUCTS[screen.productId];
+        const group = product.requiredGroups && product.requiredGroups.find(g=>g.key===groupKey);
+        const item = group && group.options.find(o=>o.id===itemId);
+        // A group-item's own nested required picks (e.g. a Happy Meal's
+        // postre / juguete-o-libro) must be complete before this page can
+        // confirm back up to the parent — same incomplete-required-group
+        // guard as confirm-product, just scoped to this page's own draft.
+        if(item && item.subGroups){
+          const firstIncomplete = item.subGroups.find(g=>!localDraft[g.key+'ItemId']);
+          if(firstIncomplete){
+            state.validationErrorSectionId = firstIncomplete.key;
+            localDraft[firstIncomplete.key+'Open'] = true;
+            render();
+            raf(()=>{
+              const target = document.querySelector('[data-section-anchor="'+firstIncomplete.key+'"]');
+              if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
+            });
+            return;
+          }
+        }
         // Same pop-then-apply choreography as a combo's confirm-item: wait
         // for this nested page to finish its exit animation before writing
         // the pick onto the parent product screen and settling the scroll
@@ -3352,9 +3879,14 @@
         // gets clamped short of the target's true "top" position, and
         // landing on that clamp instantly reads as a mis-placed snap — so
         // that one case gets a softer, smooth settle instead.
-        const groupList = (PRODUCTS[screen.productId].requiredGroups)||[];
+        const groupList = (product.requiredGroups)||[];
         const isLastGroup = groupList.length>0 && groupList[groupList.length-1].key===groupKey;
-        pop(()=>{ selectGroupItem(parentDraft, groupKey, itemId, localDraft.remove, localDraft.add, isLastGroup?250:0, isLastGroup); });
+        let subAnswers;
+        if(item && item.subGroups){
+          subAnswers = {};
+          item.subGroups.forEach(g=>{ subAnswers[g.key+'ItemId'] = localDraft[g.key+'ItemId']; });
+        }
+        pop(()=>{ selectGroupItem(parentDraft, groupKey, itemId, localDraft.remove, localDraft.add, isLastGroup?250:0, isLastGroup, subAnswers); });
         return;
       }
       case 'confirm-product': {
@@ -3372,6 +3904,24 @@
         if(sized && !draft.drinkItemId){
           showToast('Please choose a drink first');
           return;
+        }
+        // Generic required-pick groups (Combo Satisfyer's Burger/Side/Drink,
+        // Aloha's Poke/Drink/Postre, or any future product's own set) — same
+        // "flag the first blocking one, open it, scroll it into view" pattern
+        // the old combo builder's add-combo/banner-jump used for its own
+        // sections (see state.validationErrorSectionId).
+        if(product.requiredGroups){
+          const firstIncomplete = product.requiredGroups.find(g=>!draft[g.key+'ItemId']);
+          if(firstIncomplete){
+            state.validationErrorSectionId = firstIncomplete.key;
+            draft[firstIncomplete.key+'Open'] = true;
+            render();
+            raf(()=>{
+              const target = document.querySelector('[data-section-anchor="'+firstIncomplete.key+'"]');
+              if(target && typeof target.scrollIntoView === 'function') target.scrollIntoView({behavior:'smooth', block:'start'});
+            });
+            return;
+          }
         }
         if(screen.editingCartId){
           const entry = cartProduct(screen.editingCartId);
@@ -3442,9 +3992,86 @@
 
 
   document.getElementById('resetBtn').addEventListener('click', ()=>{
-    state = freshState();
+    // Reset whichever example is currently loaded rather than always
+    // jumping back to Combo Satisfyer, so it plays nice with the drawer.
+    state = freshState(state.stack[0] && state.stack[0].productId);
     render();
   });
+
+  // ---------------- examples panel ----------------
+  // Always-visible list in the emulator chrome (not an in-app drawer) —
+  // just needs its "active" highlight kept in sync whenever the loaded
+  // example changes.
+  function renderSidebarList(){
+    const list = document.getElementById('drawerList');
+    if(!list) return;
+    const activeId = state.stack[0] && state.stack[0].productId;
+    list.innerHTML = EXAMPLE_PRODUCTS.map(function(p){
+      const active = activeId === p.id;
+      return '<div class="proto-sidebar-item'+(active ? ' active' : '')+'" data-switch-product="'+p.id+'">'
+        + '<img src="'+p.img+'" alt="">'
+        + '<span class="proto-sidebar-item-name pintxo-typography-body1">'+p.label+'</span>'
+        + '</div>';
+    }).join('');
+  }
+  // Below the 900px breakpoint (see the media query above) the panel
+  // hides itself and this small popover takes over instead — opened right
+  // under the hamburger button next to Reset. Positioned in JS rather
+  // than pure CSS because that button's own position isn't fixed: the
+  // whole phone+controls column re-centers itself on the viewport (see
+  // .proto-wrap), so "next to Reset" only holds up if this reads the
+  // button's actual position each time it opens.
+  function openSidebarMenu(){
+    const btn = document.getElementById('sidebarToggleBtn');
+    const panel = document.getElementById('protoSidebar');
+    const rect = btn.getBoundingClientRect();
+    panel.style.position = 'fixed';
+    panel.style.top = (rect.bottom + 8) + 'px';
+    panel.style.left = 'auto';
+    panel.style.right = (window.innerWidth - rect.right) + 'px';
+    panel.style.transform = 'none';
+    panel.classList.add('open');
+  }
+  function closeSidebarMenu(){
+    const panel = document.getElementById('protoSidebar');
+    panel.classList.remove('open');
+    // Clear the inline overrides openSidebarMenu set, so the panel falls
+    // back to its normal CSS (the always-on, vertically-centered position)
+    // the moment the viewport is wide enough not to need the popover.
+    panel.style.position = '';
+    panel.style.top = '';
+    panel.style.left = '';
+    panel.style.right = '';
+    panel.style.transform = '';
+  }
+  document.getElementById('sidebarToggleBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    const panel = document.getElementById('protoSidebar');
+    if(panel.classList.contains('open')) closeSidebarMenu();
+    else openSidebarMenu();
+  });
+  document.addEventListener('click', function(e){
+    const panel = document.getElementById('protoSidebar');
+    if(!panel.classList.contains('open')) return;
+    if(panel.contains(e.target) || e.target.closest('#sidebarToggleBtn')) return;
+    closeSidebarMenu();
+  });
+  // A resize can cross the breakpoint in either direction (or just change
+  // where the button sits), so the simplest correct thing is to always
+  // close rather than try to reposition an open popover mid-resize.
+  window.addEventListener('resize', closeSidebarMenu);
+  document.getElementById('drawerList').addEventListener('click', function(e){
+    const item = e.target.closest('[data-switch-product]');
+    if(!item) return;
+    const pid = item.getAttribute('data-switch-product');
+    if(pid !== (state.stack[0] && state.stack[0].productId)){
+      state = freshState(pid);
+      render();
+      renderSidebarList();
+    }
+    closeSidebarMenu();
+  });
+  renderSidebarList();
 
   render();
 
